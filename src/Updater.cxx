@@ -20,8 +20,11 @@ Updater::Updater() :
 Updater::~Updater() {
 }
 
-void Updater::Notify(){
-	fDataHandler->Update();
-	fGui->SetRunNumber(fDataHandler->GetRunNumber());
-	fGui->RedrawView();
+bool Updater::Notify(){
+	if(fDataHandler->Update()){
+		fGui->SetRunNumber(fDataHandler->GetRunNumber());
+		fGui->RedrawView();
+		return true;
+	}
+	return false;
 }

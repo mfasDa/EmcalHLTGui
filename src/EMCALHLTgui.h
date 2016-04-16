@@ -18,6 +18,7 @@ class TGMainFrame;
 class TGListBox;
 class TGLabel;
 class TRootEmbeddedCanvas;
+class TVirtualPad;
 
 class DataHandler;
 class Updater;

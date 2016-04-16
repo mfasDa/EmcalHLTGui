@@ -1,0 +1,6 @@
+.git
+.settings/
+.project
+.cproject
+*.o
+EMCALHLTgui

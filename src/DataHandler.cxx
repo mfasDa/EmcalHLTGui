@@ -6,6 +6,9 @@
  */
 #include "zmq.h"
 
+#include <TH1.h>
+#include <TObject.h>
+
 #include "DataHandler.h"
 #include "EmcalZMQhelpers.h"
 
@@ -29,6 +32,17 @@ void DataHandler::Clear(){
 		delete *it;
 }
 
+TH1 *DataHandler::FindHistogram(const std::string &histname){
+	TH1 *result = NULL;
+	for(std::vector<TObject *>::iterator it = fData.begin(); it != fData.end(); ++it){
+		if(std::string((*it)->GetName()) == histname){
+			result = static_cast<TH1 *>(*it);
+			break;
+		}
+	}
+	return result;
+}
+
 bool DataHandler::DoRequest(){
     emcalzmq_msg_send("CONFIG", "*EMC*", fZMQin, ZMQ_SNDMORE);
     emcalzmq_msg_send("", "", fZMQin, 0);
@@ -50,8 +64,7 @@ bool DataHandler::DoRequest(){
       //server died
       Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
       fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-      if (fZMQsocketModeIN < 0) return NULL;
-      continue;
+      if (fZMQsocketModeIN < 0) return false;
     }
     return true;
 }
@@ -88,6 +101,10 @@ void DataHandler::GetData(){
 
 }
 
-void DataHandler::Update(){
-	if(DoRequest()) GetData();
+bool DataHandler::Update(){
+	if(DoRequest()){
+		GetData();
+		return true;
+	}
+	return false;
 }

@@ -30,7 +30,7 @@ void ViewHandler::InsertView(const std::string &viewname, View *myview){
 
 const View *ViewHandler::FindView(const std::string &name) const {
 	const View *result = NULL;
-	std::map<std::string, View *>::iterator found = fViewMap.find(name);
+	std::map<std::string, View *>::const_iterator found = fViewMap.find(name);
 	if(found != fViewMap.end()) result = found->second;
 	return result;
 }

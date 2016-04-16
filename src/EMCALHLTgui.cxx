@@ -13,6 +13,7 @@
 #include <TGWindow.h>
 #include <TGLabel.h>
 #include <TGListBox.h>
+#include <TRootEmbeddedCanvas.h>
 
 #include "DataHandler.h"
 #include "Updater.h"
@@ -39,7 +40,7 @@ EMCALHLTgui::EMCALHLTgui() :
 
 	fViewSelection = new TGListBox(vframe);
 	fViewSelection->Connect("Clicked()", "EMCALGUI", this, "RedrawView()");
-	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsNormal, 10, 10, 200, 10)));
+	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsNormal, 10, 10, 200, 10));
 
 	fRunLabel = new TGLabel(vframe);
 	fRunLabel->SetText(Form("Run: %d", fRunNumber));
@@ -50,6 +51,8 @@ EMCALHLTgui::EMCALHLTgui() :
 	fCanvas = new TRootEmbeddedCanvas("plot", fMain, 600, 400);
 	fMain->AddFrame(fCanvas, new TGLayoutHints(kLHintsLeft, 200, 10, 10, 10));
 
+	fMain->MapWindow();
+
 	fTimer = new Updater();
 	fTimer->SetGUI(this);
 }
@@ -57,7 +60,7 @@ EMCALHLTgui::EMCALHLTgui() :
 EMCALHLTgui::~EMCALHLTgui() {
 	if(fTimer){
 		fTimer->Stop();
-		delete fTimer();
+		delete fTimer;
 	}
 	if(fDataHandler) delete fDataHandler;
 	if(fViewHandler) delete fViewHandler;
@@ -68,8 +71,8 @@ EMCALHLTgui::~EMCALHLTgui() {
 void EMCALHLTgui::SetViewHandler(ViewHandler *handler) {
 	fViewHandler = handler;
 	int icounter = 0;
-	for(std::map<std::string, View *>::iterator it = fViewHandler->GetListOfViews().begin(); it != fViewHandler->GetListOfViews().end(); ++it){
-		fViewSelection->AddEntry(it->second->GetTitle(), icounter);
+	for(std::map<std::string, View *>::const_iterator it = fViewHandler->GetListOfViews().begin(); it != fViewHandler->GetListOfViews().end(); ++it){
+		fViewSelection->AddEntry(it->second->GetTitle().c_str(), icounter);
 		fViewLookup.insert(std::pair<int, std::string>(icounter, it->first));
 	}
 }
@@ -81,7 +84,7 @@ void EMCALHLTgui::ChangeView(){
 }
 
 void EMCALHLTgui::RedrawView(){
-	View *myview = fViewHandler->FindView(fCurrentView);
+	const View *myview = fViewHandler->FindView(fCurrentView);
 	if(!myview) return;
 	fDataHandler->Update();
 
@@ -90,12 +93,12 @@ void EMCALHLTgui::RedrawView(){
 
 	for(Int_t ipad = 1; ipad <= myview->GetNumberOfPads() ; ipad++){
 		TVirtualPad * mypad = internalCanvas->cd(ipad);
-		ViewPad *currentpad = myview->GetPad(ipad-1);
+		const ViewPad *currentpad = myview->GetPad(ipad-1);
 		if(!currentpad) continue;
 		HandlePadOptions(mypad, currentpad);
-`
+
 		int ndrawable = 0;
-		for(std::vector<ViewDrawable *>::iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
+		for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
 			ProcessDrawable(*(*diter), ndrawable != 0);
 			ndrawable++;
 		}
@@ -106,7 +109,7 @@ void EMCALHLTgui::RedrawView(){
 }
 
 void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
-	for(std::vector<std::string>::iterator optiter = options->GetListOfOptions().begin(); options->GetListOfOptions().end(); ++optiter){
+	for(std::vector<std::string>::const_iterator optiter = options->GetListOfOptions().begin(); optiter != options->GetListOfOptions().end(); ++optiter){
 		if(*optiter == "logx") output->SetLogx();
 		if(*optiter == "logy") output->SetLogy();
 		if(*optiter == "logz") output->SetLogz();
@@ -118,12 +121,12 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	TH1 *hist = fDataHandler->FindHistogram(drawable.GetName());
 	if(!hist) return;
 
-	for(std::vector<std::string>::iterator optiter = drawable.GetOptions().begin(); optiter != drawable.GetOptions().end(); ++optiter){
+	for(std::vector<std::string>::const_iterator optiter = drawable.GetOptions().begin(); optiter != drawable.GetOptions().end(); ++optiter){
 		std::string key, value;
 		size_t delim;
 		if((delim = optiter->find("=")) != std::string::npos){
-			key = (*optiter)(0, delim - 1);
-			value = (*optiter)(delim + 1, optiter->length() - 1);
+			key = optiter->substr(0, delim - 1);
+			value = optiter->substr(delim+1, optiter->length() - 1);
 		} else {
 			key = *optiter;
 			value = "";
@@ -135,7 +138,7 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 			hist->SetLineColor(col);
 		}
 		if(key == "marker"){
-			hist->SetMarkerSize(static_cast<int>(value));
+			hist->SetMarkerSize(atoi(value.c_str()));
 		}
 	}
 

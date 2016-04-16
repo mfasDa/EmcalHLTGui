@@ -34,7 +34,7 @@ public:
 	DataHandler();
 	virtual ~DataHandler();
 
-	void Update();
+	bool Update();
 	TH1 *FindHistogram(const std::string & histname);
 
 	int GetRunNumber() const { return fRunNumber; }

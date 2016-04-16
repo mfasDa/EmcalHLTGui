@@ -23,7 +23,7 @@ public:
 	void SetGUI(EMCALHLTgui *gui) { fGui = gui; }
 	void SetDataHandler(DataHandler *handler) { fDataHandler = handler; }
 
-	virtual void Notify();
+	virtual bool Notify();
 };
 
 #endif /* UPDATER_H_ */

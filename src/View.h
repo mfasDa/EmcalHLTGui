@@ -23,7 +23,7 @@ public:
 	void AddOption(const std::string &option) { fOptions.push_back(option); }
 
 	const std::string &GetHistname() const { return fHistname; }
-	const std::vector<std::string &> GetOptions() const { return fOptions; }
+	const std::vector<std::string > &GetOptions() const { return fOptions; }
 
 
 	void SetName(const std::string &name) { fHistname = name; }
@@ -42,8 +42,8 @@ public:
 	void AddOption(const std::string &opt) { fPadOptions.push_back(opt); }
 	void AddDrawable(const std::string &histname, const std::string &drawoptions);
 
-	std::vector<std::string> &GetListOfOptions() const { return fPadOptions; }
-	std::vector<ViewDrawable *> &GetListOfDrawables() const { return fDrawables; }
+	const std::vector<std::string> &GetListOfOptions() const { return fPadOptions; }
+	const std::vector<ViewDrawable *> &GetListOfDrawables() const { return fDrawables; }
 };
 
 class View {
@@ -51,7 +51,7 @@ class View {
 	std::string							fTitle;
 	int									fNPads;
 
-	std::map<int, std::string>			fPads;
+	std::map<int, ViewPad *>			fPads;
 public:
 	View(const std::string &name, const std::string &title);
 	virtual ~View() {}
@@ -60,7 +60,7 @@ public:
 	void DefinePad();
 
 	int GetNumberOfPads() const { return fNPads; }
-	ViewPad* GetPad(int pad) const;
+	const ViewPad* GetPad(int pad) const;
 	void SetPad(int padId, ViewPad *padDef);
 
 	std::string GetName() const { return fName; }

@@ -17,15 +17,15 @@ View::View(const std::string &name, const std::string &title) :
 
 }
 
-ViewPad *View::GetPad(int pad) const {
+const ViewPad *View::GetPad(int pad) const {
 	if(pad >= fNPads) return NULL;
-	std::map<std::string, ViewPad *>::iterator mypad = fPads.find(pad);
-	if(mypad != fPads.end()) return mypad.second;
+	std::map<int, ViewPad *>::const_iterator mypad = fPads.find(pad);
+	if(mypad != fPads.end()) return mypad->second;
 	return NULL;
 }
 
 void View::SetPad(int padId, ViewPad *padDef){
-	std::map<std::string, ViewPad *>::iterator mypad = fPads.find(padId);
+	std::map<int, ViewPad *>::iterator mypad = fPads.find(padId);
 	if(mypad != fPads.end()){
 		delete mypad->second;
 		mypad->second = padDef;
@@ -35,7 +35,8 @@ void View::SetPad(int padId, ViewPad *padDef){
 }
 
 ViewPad::~ViewPad(){
-	for(std::vector<ViewDrawable *>::iterator it = fDrawables.begin(); it != fDrawables.end(); ++fDrawables) delete *it;
+	for(std::vector<ViewDrawable *>::const_iterator it = fDrawables.begin(); it != fDrawables.end(); ++it)
+		delete *it;
 }
 
 void ViewPad::AddDrawable(const std::string &histname, const std::string &options){

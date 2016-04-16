@@ -19,13 +19,13 @@
 #include "EmcalZMQhelpers.h"
 
 //init the shared context to null
-void* AliZMQhelpers::gZMQcontext = NULL;
+void* EMCalZMQhelpers::gZMQcontext = NULL;
 
 //_______________________________________________________________________________________
 void* emcalzmq_context()
 { 
-  if (!AliZMQhelpers::gZMQcontext) AliZMQhelpers::gZMQcontext=zmq_ctx_new();
-  return AliZMQhelpers::gZMQcontext;
+  if (!EMCalZMQhelpers::gZMQcontext) EMCalZMQhelpers::gZMQcontext=zmq_ctx_new();
+  return EMCalZMQhelpers::gZMQcontext;
 }
 
 //_______________________________________________________________________________________

@@ -4,7 +4,7 @@
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 // some of it might be inspired by czmq.h
 
-namespace AliZMQhelpers {
+namespace EMCalZMQhelpers {
   extern void* gZMQcontext; //a global ZMQ context
 }
 

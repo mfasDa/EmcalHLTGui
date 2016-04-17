@@ -41,3 +41,11 @@ clean:
 	@echo "Cleanup ..."
 	rm -rf src/*.o EMCALHLTgui
 	
+tar:
+	mkdir -p $(PACKAGE)src/src/
+	$(foreach fl, $(SRCS), cp $(fl) $(PACKAGE)src/src/;)
+	$(foreach fl, $(HDRS), cp $(fl) $(PACKAGE)src/src/;)
+	$(foreach fl, $(DHDRS), cp $(fl) $(PACKAGE)src/src/;)
+	cp src/sources.mk $(PACKAGE)src/src/
+	cp Makefile $(PACKAGE)src/
+	tar czvf $(PACKAGE)src.tar.gz $(PACKAGE)src	

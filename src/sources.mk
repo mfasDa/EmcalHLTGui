@@ -9,4 +9,6 @@ DEPSRC:=src/ViewHandler.cxx \
 		
 SRCS=$(DEPSRC) $(APPSRC)
 		
-HDRS=$(DEPHDRS:%.cxx=%.h)
+HDRS=$(DEPSRC:%.cxx=%.h)
+
+DHDRS=src/EMCALHLTguiLinkDef.h

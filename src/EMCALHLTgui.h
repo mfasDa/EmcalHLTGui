@@ -11,6 +11,9 @@
 #include <TQObject.h>
 #include <RQ_OBJECT.h>
 #include <TGFrame.h>
+#include <TGLabel.h>
+#include <TGListBox.h>
+#include <TRootEmbeddedCanvas.h>
 
 #include <map>
 #include <string>
@@ -62,6 +65,8 @@ public:
 	void Update();
 	void ChangeView(int viewentry);
 	void RedrawView();
+
+	ClassDef(EMCALHLTgui, 1)
 };
 
 #endif /* EMCALHLTGUI_H_ */

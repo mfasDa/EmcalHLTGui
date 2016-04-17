@@ -20,6 +20,8 @@
 #include "View.h"
 #include "ViewHandler.h"
 
+ClassImp(EMCALHLTgui)
+
 EMCALHLTgui::EMCALHLTgui() :
 	TGMainFrame(gClient->GetRoot(), 1000, 600, kHorizontalFrame),
 	fViewSelection(NULL),

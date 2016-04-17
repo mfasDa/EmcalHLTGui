@@ -10,6 +10,7 @@
 
 #include <TQObject.h>
 #include <RQ_OBJECT.h>
+#include <TGFrame.h>
 
 #include <map>
 #include <string>
@@ -26,11 +27,10 @@ class ViewHandler;
 class ViewPad;
 class ViewDrawable;
 
-class EMCALHLTgui {
+class EMCALHLTgui : public TGMainFrame {
 	RQ_OBJECT("EMCALGUI");
 
 	// View
-	TGMainFrame					*fMain;
 	TGListBox					*fViewSelection;
 	TRootEmbeddedCanvas			*fCanvas;
 	TGLabel						*fRunLabel;
@@ -60,7 +60,7 @@ public:
 	void StartUpdateCycle();
 	void SetRunNumber(int runnumber);
 	void Update();
-	void ChangeView();
+	void ChangeView(int viewentry);
 	void RedrawView();
 };
 

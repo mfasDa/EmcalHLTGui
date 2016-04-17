@@ -21,7 +21,7 @@
 #include "ViewHandler.h"
 
 EMCALHLTgui::EMCALHLTgui() :
-	fMain(NULL),
+	TGMainFrame(gClient->GetRoot(), 1000, 600, kHorizontalFrame),
 	fViewSelection(NULL),
 	fRunLabel(NULL),
 	fCanvas(NULL),
@@ -32,26 +32,27 @@ EMCALHLTgui::EMCALHLTgui() :
 	fDataHandler(NULL),
 	fTimer(NULL)
 {
-	fMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
-	fMain->SetWindowName("EMCAL HLT Monitor");
+	SetWindowName("EMCAL HLT Monitor");
 
+	TGVerticalFrame *vframe = new TGVerticalFrame(this);
 
-	TGVerticalFrame *vframe = new TGVerticalFrame(fMain , 200, 600);
-
-	fViewSelection = new TGListBox(vframe);
-	fViewSelection->Connect("Clicked()", "EMCALGUI", this, "RedrawView()");
-	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsNormal, 10, 10, 200, 10));
+	fViewSelection = new TGListBox(vframe, 1);
+	fViewSelection->Resize(400, 200);
+	fViewSelection->Connect("Selected(Int_t)", "EMCALGUI", this, "RedrawView(Int_t)");
+	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsTop));
 
 	fRunLabel = new TGLabel(vframe);
 	fRunLabel->SetText(Form("Run: %d", fRunNumber));
-	vframe->AddFrame(fRunLabel, new TGLayoutHints());
+	vframe->AddFrame(fRunLabel, new TGLayoutHints(kLHintsBottom));
 
-	fMain->AddFrame(vframe, new TGLayoutHints(kLHintsNormal,10,10,10,10));
+	AddFrame(vframe, new TGLayoutHints(kLHintsLeft|kLHintsExpandY,10,10,10,10));
 
-	fCanvas = new TRootEmbeddedCanvas("plot", fMain, 600, 400);
-	fMain->AddFrame(fCanvas, new TGLayoutHints(kLHintsLeft, 200, 10, 10, 10));
+	fCanvas = new TRootEmbeddedCanvas("plot", this, 600, 400);
+	AddFrame(fCanvas, new TGLayoutHints(kLHintsRight|kLHintsExpandY, 10, 10, 10, 10));
 
-	fMain->MapWindow();
+	MapWindow();
+	Resize();
+	MapRaised();
 
 	fTimer = new Updater();
 	fTimer->SetGUI(this);
@@ -64,8 +65,7 @@ EMCALHLTgui::~EMCALHLTgui() {
 	}
 	if(fDataHandler) delete fDataHandler;
 	if(fViewHandler) delete fViewHandler;
-	fMain->Cleanup();
-	delete fMain;
+	Cleanup();
 }
 
 void EMCALHLTgui::SetViewHandler(ViewHandler *handler) {
@@ -78,8 +78,8 @@ void EMCALHLTgui::SetViewHandler(ViewHandler *handler) {
 }
 
 
-void EMCALHLTgui::ChangeView(){
-	fCurrentView = fViewLookup.find(fViewSelection->GetSelectedEntry()->EntryId())->second;
+void EMCALHLTgui::ChangeView(int viewentry){
+	fCurrentView = fViewLookup.find(viewentry)->second;
 	RedrawView();
 }
 
@@ -158,6 +158,7 @@ void EMCALHLTgui::SetRunNumber(int runnumber) {
 	if(runnumber != fRunNumber){
 		fRunLabel->SetText(Form("Run: %d", runnumber));
 		fRunNumber = runnumber;
+		Layout();
 	}
 }
 

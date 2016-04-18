@@ -11,6 +11,7 @@
 #include <TH1.h>
 #include <TMessage.h>
 #include <TObject.h>
+#include <TSystem.h>
 
 #include "DataHandler.h"
 #include "EmcalZMQhelpers.h"
@@ -19,6 +20,7 @@ DataHandler::DataHandler() :
 fRunNumber(0),
 fHLTmode("B"),
 fData(),
+fLock(false),
 fZMQcontext(NULL),
 fZMQin(NULL),
 fZMQconfigIN("REQ>tcp://alihlt-dcsgw01.cern.ch:60422"),
@@ -35,27 +37,26 @@ DataHandler::~DataHandler() {
 void DataHandler::Clear(){
 	for(std::vector<TObject *>::iterator it = fData.begin(); it != fData.end(); ++it)
 		delete *it;
+	fData.clear();
 }
 
 TH1 *DataHandler::FindHistogram(const std::string &histname){
-	std::cout << "Finding histo " << histname << std::endl; 
+	while(fLock) gSystem->Sleep(1);
+	fLock = true;
 	TH1 *result = NULL;
 	for(std::vector<TObject *>::iterator it = fData.begin(); it != fData.end(); ++it){
-		std::cout << "Next iteration" << std::endl;
-		std::cout << "Histo " << (*it)->GetName() << std::endl;
 		if(std::string((*it)->GetName()) == histname){
 			result = static_cast<TH1 *>(*it);
 			break;
 		}
 	}
-	if(!result) std::cout << "Not found " << histname << std::endl;
+	if(!result) std::cerr << "Not found " << histname << std::endl;
+	fLock = false;
 	return result;
 }
 
 bool DataHandler::DoRequest(){
-    std::cout << "Sending  config request " << fZMQconfigIN << std::endl;
     fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-    std::cout << fZMQsocketModeIN << std::endl;
     emcalzmq_msg_send("CONFIG", "select=EMC*", fZMQin, ZMQ_SNDMORE);
     emcalzmq_msg_send("", "", fZMQin, 0);
 
@@ -78,8 +79,6 @@ bool DataHandler::DoRequest(){
       fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
       std::cout << fZMQsocketModeIN << std::endl;
       if (fZMQsocketModeIN < 0) return false;
-    } else {
-	std::cout << "connection established" << std::endl;
     }
     return true;
 }
@@ -98,18 +97,17 @@ void DataHandler::GetData(){
 			//check if we have a runnumber in the string
 			std::string info;
 			emcalzmq_msg_iter_data(i,info);
-			Printf("processing INFO %s", info.c_str());
+			//Printf("processing INFO %s", info.c_str());
 
 			stringMap fInfoMap = ParseParamString(info);
 
 			fRunNumber = atoi(fInfoMap["run"].c_str());
-			//fHLTmode = fInfoMap["HLTmode"];
+			fHLTmode = fInfoMap["HLTmode"];
 			continue;
 		}
 
 		TObject* object;
 		emcalzmq_msg_iter_data(i, object);
-		printf("received object %s\n", object->GetName());
 		fData.push_back(object);
 
 	} //for iterator i
@@ -118,9 +116,13 @@ void DataHandler::GetData(){
 }
 
 bool DataHandler::Update(){
+	while(fLock) gSystem->Sleep(1);
+	fLock = true;
 	if(DoRequest()){
 		GetData();
+		fLock = false;
 		return true;
 	}
+	fLock = false;
 	return false;
 }

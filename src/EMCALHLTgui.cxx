@@ -58,7 +58,7 @@ EMCALHLTgui::EMCALHLTgui() :
 	Resize();
 	MapRaised();
 
-	fTimer = new Updater(20000);
+	fTimer = new Updater(10000);
 	fTimer->SetGUI(this);
 }
 
@@ -92,9 +92,9 @@ void EMCALHLTgui::ChangeView(Int_t viewentry){
 void EMCALHLTgui::RedrawView(){
 	const View *myview = fViewHandler->FindView(fCurrentView);
 	if(!myview) return;
-	//fDataHandler->Update();
 
 	TCanvas *internalCanvas = fCanvas->GetCanvas();
+	internalCanvas->Clear();
 	internalCanvas->DivideSquare(myview->GetNumberOfPads());
 
 	for(Int_t ipad = 1; ipad <= myview->GetNumberOfPads() ; ipad++){
@@ -108,6 +108,7 @@ void EMCALHLTgui::RedrawView(){
 			ProcessDrawable(*(*diter), ndrawable != 0);
 			ndrawable++;
 		}
+		mypad->Update();
 	}
 
 	internalCanvas->Update();
@@ -125,7 +126,10 @@ void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
 void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	std::string drawoption = "";
 	TH1 *hist = fDataHandler->FindHistogram(drawable.GetName());
-	if(!hist) return;
+	if(!hist){
+		std::cerr << "Histogram " << drawable.GetName() << " not found" << std::endl;
+		return;
+	}
 
 	for(std::vector<std::string>::const_iterator optiter = drawable.GetOptions().begin(); optiter != drawable.GetOptions().end(); ++optiter){
 		std::string key, value;
@@ -169,8 +173,7 @@ void EMCALHLTgui::SetRunNumber(int runnumber) {
 }
 
 void EMCALHLTgui::StartUpdateCycle(){
-	std::cout << "Start the timer" << std::endl;
+	if(fDataHandler->Update()) SetRunNumber(fDataHandler->GetRunNumber());
 	fTimer->SetDataHandler(fDataHandler);
 	fTimer->TurnOn();
-	//fTimer->Start(1000);
 }

@@ -22,7 +22,6 @@ Updater::~Updater() {
 }
 
 bool Updater::Notify(){
-	std::cout << "Calling update" << std::endl;
 	if(fDataHandler->Update()){
 		fGui->SetRunNumber(fDataHandler->GetRunNumber());
 		fGui->RedrawView();

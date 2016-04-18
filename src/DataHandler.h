@@ -19,6 +19,7 @@ class DataHandler {
 	int 							fRunNumber;
 	std::string						fHLTmode;
 	std::vector<TObject *>					fData;
+	bool							fLock;
 
 	// ZMQ stuff
 	void* fZMQcontext;

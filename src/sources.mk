@@ -5,7 +5,8 @@ DEPSRC:=src/ViewHandler.cxx \
 		src/EmcalZMQhelpers.cxx \
 		src/DataHandler.cxx \
 		src/Updater.cxx \
-		src/EMCALHLTgui.cxx
+		src/EMCALHLTgui.cxx \
+		src/views/BasicTriggerAmplitudeView.cxx
 		
 SRCS=$(DEPSRC) $(APPSRC)
 		

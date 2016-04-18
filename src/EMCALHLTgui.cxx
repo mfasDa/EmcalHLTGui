@@ -4,6 +4,7 @@
  *  Created on: 15.04.2016
  *      Author: markusfasel
  */
+#include <iostream>
 
 #include "EMCALHLTgui.h"
 
@@ -40,7 +41,7 @@ EMCALHLTgui::EMCALHLTgui() :
 
 	fViewSelection = new TGListBox(vframe, 1);
 	fViewSelection->Resize(400, 200);
-	fViewSelection->Connect("Selected(Int_t)", "EMCALGUI", this, "RedrawView(Int_t)");
+	fViewSelection->Connect("Selected(Int_t)", "EMCALHLTgui", this, "ChangeView(Int_t)");
 	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsTop));
 
 	fRunLabel = new TGLabel(vframe);
@@ -51,18 +52,19 @@ EMCALHLTgui::EMCALHLTgui() :
 
 	fCanvas = new TRootEmbeddedCanvas("plot", this, 600, 400);
 	AddFrame(fCanvas, new TGLayoutHints(kLHintsRight|kLHintsExpandY, 10, 10, 10, 10));
-
+	
+	MapSubwindows();
 	MapWindow();
 	Resize();
 	MapRaised();
 
-	fTimer = new Updater();
+	fTimer = new Updater(20000);
 	fTimer->SetGUI(this);
 }
 
 EMCALHLTgui::~EMCALHLTgui() {
 	if(fTimer){
-		fTimer->Stop();
+		fTimer->TurnOff();
 		delete fTimer;
 	}
 	if(fDataHandler) delete fDataHandler;
@@ -73,14 +75,16 @@ EMCALHLTgui::~EMCALHLTgui() {
 void EMCALHLTgui::SetViewHandler(ViewHandler *handler) {
 	fViewHandler = handler;
 	int icounter = 0;
-	for(std::map<std::string, View *>::const_iterator it = fViewHandler->GetListOfViews().begin(); it != fViewHandler->GetListOfViews().end(); ++it){
+	const std::map<std::string, View *> &viewlist = fViewHandler->GetListOfViews();
+	for(std::map<std::string, View *>::const_iterator it = viewlist.begin(); it != viewlist.end(); ++it){
 		fViewSelection->AddEntry(it->second->GetTitle().c_str(), icounter);
 		fViewLookup.insert(std::pair<int, std::string>(icounter, it->first));
+		icounter++;
 	}
 }
 
 
-void EMCALHLTgui::ChangeView(int viewentry){
+void EMCALHLTgui::ChangeView(Int_t viewentry){
 	fCurrentView = fViewLookup.find(viewentry)->second;
 	RedrawView();
 }
@@ -88,7 +92,7 @@ void EMCALHLTgui::ChangeView(int viewentry){
 void EMCALHLTgui::RedrawView(){
 	const View *myview = fViewHandler->FindView(fCurrentView);
 	if(!myview) return;
-	fDataHandler->Update();
+	//fDataHandler->Update();
 
 	TCanvas *internalCanvas = fCanvas->GetCanvas();
 	internalCanvas->DivideSquare(myview->GetNumberOfPads());
@@ -165,6 +169,8 @@ void EMCALHLTgui::SetRunNumber(int runnumber) {
 }
 
 void EMCALHLTgui::StartUpdateCycle(){
+	std::cout << "Start the timer" << std::endl;
 	fTimer->SetDataHandler(fDataHandler);
-	fTimer->Start(1000);
+	fTimer->TurnOn();
+	//fTimer->Start(1000);
 }

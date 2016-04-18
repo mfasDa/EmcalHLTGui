@@ -6,6 +6,7 @@
  */
 
 #include "ViewHandler.h"
+#include <iostream>
 
 ViewHandler::ViewHandler() {
 	// TODO Auto-generated constructor stub

@@ -17,7 +17,7 @@ class Updater : public TTimer {
 	DataHandler				*fDataHandler;
 	EMCALHLTgui				*fGui;
 public:
-	Updater();
+	Updater(Long_t timeout = 0);
 	virtual ~Updater();
 
 	void SetGUI(EMCALHLTgui *gui) { fGui = gui; }

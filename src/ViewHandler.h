@@ -22,6 +22,7 @@ public:
 	void InsertView(const std::string &viewname, View *myview);
 	const View *FindView(const std::string &name) const;
 	const std::map<std::string, View *> GetListOfViews() const { return fViewMap; }
+	int GetNumberOfViews() const { return fViewMap.size(); }
 };
 
 #endif /* VIEWHANDLER_H_ */

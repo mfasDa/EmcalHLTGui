@@ -28,14 +28,15 @@ $(PACKAGE): $(OBJS) src/G__$(PACKAGE).o
 	@echo "Linking" $@
 	$(CXX) $^ -o $@ $(ROOTLIBS) $(ALICELIBS) $(ZMQLIBS) 
 	rm src/*.o
+	rm src/views/*.o
 	
 %.o : %.cxx $(DEPS)
 	@echo "Compiling" $< ...
-	$(CXX) -c $< -o $@ $(ROOTCFLAGS) -I$(ROOTINCLUDE) -I$(ALICEINCLUDE) -I$(ZMQINLUDE) -I$(PWD)
+	$(CXX) -c $< -o $@ $(ROOTCFLAGS) -I$(ROOTINCLUDE) -I$(ALICEINCLUDE) -I$(ZMQINLUDE) -I$(PWD) -I$(PWD)/src
 	
 src/G__$(PACKAGE).cxx: $(HDRS) $(DHDRS)
 	@echo "Generating dictionary ..."
-	$(DICTGEN) -f $@ -c $(CINTFLAGS) -I$(PWD) $^	
+	$(DICTGEN) -f $@ -c $(CINTFLAGS) -I$(PWD)/src $^	
 	
 clean:
 	@echo "Cleanup ..."

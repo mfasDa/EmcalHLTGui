@@ -31,7 +31,7 @@ class ViewPad;
 class ViewDrawable;
 
 class EMCALHLTgui : public TGMainFrame {
-	RQ_OBJECT("EMCALGUI");
+	RQ_OBJECT("EMCALHLTgui");
 
 	// View
 	TGListBox					*fViewSelection;
@@ -61,9 +61,9 @@ public:
 	void SetDataHandler(DataHandler *handler) { fDataHandler = handler; }
 
 	void StartUpdateCycle();
-	void SetRunNumber(int runnumber);
-	void Update();
-	void ChangeView(int viewentry);
+	void SetRunNumber(Int_t runnumber);
+	//void Update();
+	void ChangeView(Int_t viewentry);
 	void RedrawView();
 
 	ClassDef(EMCALHLTgui, 1)

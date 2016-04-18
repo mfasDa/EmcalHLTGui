@@ -6,7 +6,10 @@
  */
 #include "zmq.h"
 
+#include <iostream>
+
 #include <TH1.h>
+#include <TMessage.h>
 #include <TObject.h>
 
 #include "DataHandler.h"
@@ -18,9 +21,11 @@ fHLTmode("B"),
 fData(),
 fZMQcontext(NULL),
 fZMQin(NULL),
-fZMQconfigIN("REQ>tcp://localhost:60211"),
+fZMQconfigIN("REQ>tcp://alihlt-dcsgw01.cern.ch:60422"),
 fZMQsocketModeIN(-1)
 {
+	TMessage::EnableSchemaEvolutionForAll(kTRUE);
+	fZMQcontext = zmq_ctx_new();
 }
 
 DataHandler::~DataHandler() {
@@ -33,25 +38,32 @@ void DataHandler::Clear(){
 }
 
 TH1 *DataHandler::FindHistogram(const std::string &histname){
+	std::cout << "Finding histo " << histname << std::endl; 
 	TH1 *result = NULL;
 	for(std::vector<TObject *>::iterator it = fData.begin(); it != fData.end(); ++it){
+		std::cout << "Next iteration" << std::endl;
+		std::cout << "Histo " << (*it)->GetName() << std::endl;
 		if(std::string((*it)->GetName()) == histname){
 			result = static_cast<TH1 *>(*it);
 			break;
 		}
 	}
+	if(!result) std::cout << "Not found " << histname << std::endl;
 	return result;
 }
 
 bool DataHandler::DoRequest(){
-    emcalzmq_msg_send("CONFIG", "*EMC*", fZMQin, ZMQ_SNDMORE);
+    std::cout << "Sending  config request " << fZMQconfigIN << std::endl;
+    fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+    std::cout << fZMQsocketModeIN << std::endl;
+    emcalzmq_msg_send("CONFIG", "select=EMC*", fZMQin, ZMQ_SNDMORE);
     emcalzmq_msg_send("", "", fZMQin, 0);
 
     //wait for the data
     zmq_pollitem_t sockets[] = {
       { fZMQin, 0, ZMQ_POLLIN, 0 },
     };
-    int rc = zmq_poll(sockets, 1, 100000);
+    int rc = zmq_poll(sockets, 1, 10000);
 
     if (rc==-1 && errno==ETERM)
     {
@@ -64,7 +76,10 @@ bool DataHandler::DoRequest(){
       //server died
       Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
       fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+      std::cout << fZMQsocketModeIN << std::endl;
       if (fZMQsocketModeIN < 0) return false;
+    } else {
+	std::cout << "connection established" << std::endl;
     }
     return true;
 }
@@ -94,6 +109,7 @@ void DataHandler::GetData(){
 
 		TObject* object;
 		emcalzmq_msg_iter_data(i, object);
+		printf("received object %s\n", object->GetName());
 		fData.push_back(object);
 
 	} //for iterator i

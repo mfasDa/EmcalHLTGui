@@ -18,7 +18,7 @@ class TObject;
 class DataHandler {
 	int 							fRunNumber;
 	std::string						fHLTmode;
-	std::vector<TObject *>			fData;
+	std::vector<TObject *>					fData;
 
 	// ZMQ stuff
 	void* fZMQcontext;

@@ -43,10 +43,8 @@ clean:
 	rm -rf src/*.o EMCALHLTgui
 	
 tar:
-	mkdir -p $(PACKAGE)src/src/
-	$(foreach fl, $(SRCS), cp $(fl) $(PACKAGE)src/src/;)
-	$(foreach fl, $(HDRS), cp $(fl) $(PACKAGE)src/src/;)
-	$(foreach fl, $(DHDRS), cp $(fl) $(PACKAGE)src/src/;)
-	cp src/sources.mk $(PACKAGE)src/src/
-	cp Makefile $(PACKAGE)src/
+	mkdir -p $(PACKAGE)src/
+	cp -r src $(PACKAGE)src/
+	rm -rf $(PACKAGE)src/src/*.o $(PACKAGE)src/src/G_* $(PACKAGE)src/EMCALHLTgui
 	tar czvf $(PACKAGE)src.tar.gz $(PACKAGE)src	
+	rm -rf $(PACKAGE)src

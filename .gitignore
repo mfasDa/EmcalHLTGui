@@ -1,6 +1,6 @@
-.git
-.settings/
-.project
-.cproject
-*.o
+src/G__EMCALHLTgui_rdict.pcm
+src/G__EMCALHLTgui.cxx
 EMCALHLTgui
+.cproject
+.project
+.settings/

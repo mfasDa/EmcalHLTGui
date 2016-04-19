@@ -46,5 +46,6 @@ tar:
 	mkdir -p $(PACKAGE)src/
 	cp -r src $(PACKAGE)src/
 	rm -rf $(PACKAGE)src/src/*.o $(PACKAGE)src/src/G_* $(PACKAGE)src/EMCALHLTgui
+	cp Makefile $(PACKAGE)src/
 	tar czvf $(PACKAGE)src.tar.gz $(PACKAGE)src	
 	rm -rf $(PACKAGE)src

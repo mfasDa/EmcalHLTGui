@@ -19,8 +19,8 @@ ViewHandler::~ViewHandler() {
 	}
 }
 
-void ViewHandler::InsertView(const std::string &viewname, View *myview){
-	std::map<std::string, View *>::iterator res = fViewMap.find(viewname);
+void ViewHandler::InsertView(View *myview){
+	std::map<std::string, View *>::iterator res = fViewMap.find(myview->GetName());
 	if(res != fViewMap.end()){
 		delete res->second;
 		res->second = myview;

@@ -6,7 +6,9 @@ DEPSRC:=src/ViewHandler.cxx \
 		src/DataHandler.cxx \
 		src/Updater.cxx \
 		src/EMCALHLTgui.cxx \
-		src/views/BasicTriggerAmplitudeView.cxx
+		src/views/FastORHitsView.cxx \
+		src/views/SuperModuleView.cxx \
+		src/views/TriggerPatchView.cxx
 		
 SRCS=$(DEPSRC) $(APPSRC)
 		

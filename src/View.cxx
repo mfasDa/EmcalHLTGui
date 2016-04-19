@@ -8,6 +8,15 @@
 
 #include "View.h"
 
+View::View() :
+  fName("DefaultView"),
+  fTitle("DefaultView"),
+  fNPads(0),
+  fPads()
+{
+
+}
+
 View::View(const std::string &name, const std::string &title) :
 	fName(name),
 	fTitle(title),

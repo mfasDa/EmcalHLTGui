@@ -53,6 +53,7 @@ class View {
 
 	std::map<int, ViewPad *>			fPads;
 public:
+	View();
 	View(const std::string &name, const std::string &title);
 	virtual ~View() {}
 
@@ -67,7 +68,7 @@ public:
 	std::string GetTitle() const { return fTitle; }
 
 	void SetName(const std::string &name) { fName = name; }
-	void SetTile(const std::string &title) { fTitle = title; }
+	void SetTitle(const std::string &title) { fTitle = title; }
 };
 
 #endif /* VIEW_H_ */

@@ -105,7 +105,7 @@ void EMCALHLTgui::RedrawView(){
 
 		int ndrawable = 0;
 		for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
-			ProcessDrawable(*(*diter), ndrawable != 0);
+			ProcessDrawable(*(*diter), diter != currentpad->GetListOfDrawables().begin());
 			ndrawable++;
 		}
 		mypad->Update();
@@ -116,7 +116,8 @@ void EMCALHLTgui::RedrawView(){
 }
 
 void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
-	for(std::vector<std::string>::const_iterator optiter = options->GetListOfOptions().begin(); optiter != options->GetListOfOptions().end(); ++optiter){
+	const std::vector<std::string> &globalopts = options->GetListOfOptions();
+	for(std::vector<std::string>::const_iterator optiter = globalopts.begin(); optiter != globalopts.end(); ++optiter){
 		if(*optiter == "logx") output->SetLogx();
 		if(*optiter == "logy") output->SetLogy();
 		if(*optiter == "logz") output->SetLogz();

@@ -23,23 +23,23 @@ View() {
   SetTitle(mystream.str());
 
 	ViewPad *npatches = new ViewPad;
-	npatches->AddOption("loxy");
+	npatches->AddOption("logy");
 	mystream.str(std::string());
 	mystream << "EMCTRQA_histEMCalNPatches" << patchname << patchtype;
 	npatches->AddDrawable(mystream.str(), "color=blue");
   mystream.str(std::string());
   mystream << "EMCTRQA_histDCalNPatches" << patchname << patchtype;
-  npatches->AddDrawable(mystream.str(), "color=green;drawoption=same");
+  npatches->AddDrawable(mystream.str(), "color=red;drawoption=same");
 	SetPad(0, npatches);
 
   ViewPad *maxpatch = new ViewPad;
-  maxpatch->AddOption("loxy");
+  maxpatch->AddOption("logy");
   mystream.str(std::string());
   mystream << "EMCTRQA_histEMCalMaxPatchAmp" << patchname << patchtype;
-  npatches->AddDrawable(mystream.str(), "color=blue");
+  maxpatch->AddDrawable(mystream.str(), "color=blue");
   mystream.str(std::string());
   mystream << "EMCTRQA_histDCalMaxPatchAmp" << patchname << patchtype;
-  maxpatch->AddDrawable(mystream.str(), "color=green,drawoption=same");
+  maxpatch->AddDrawable(mystream.str(), "color=red;drawoption=same");
   SetPad(1, maxpatch);
 
   ViewPad *maxpos = new ViewPad;

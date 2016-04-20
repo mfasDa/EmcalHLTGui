@@ -30,7 +30,7 @@ View() {
 	  // 4 5
 	  // 2 3
 	  // 0 1
-	  int ipad = 2 * (iSM % 2) + npads - iSM - 2;
+	  int ipad = 2 * (iSM % 2) + maxSM - iSM - 1;
 	  ViewPad *pad = new ViewPad;
 	  mystream.str(std::string());
 	  mystream << "EMCTRQA_" << histname << "_SM" << iSM;

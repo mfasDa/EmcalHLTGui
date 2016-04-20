@@ -24,7 +24,7 @@
 ClassImp(EMCALHLTgui)
 
 EMCALHLTgui::EMCALHLTgui() :
-	TGMainFrame(gClient->GetRoot(), 1000, 600, kHorizontalFrame),
+	TGMainFrame(gClient->GetRoot(), 1200, 8000, kHorizontalFrame),
 	fViewSelection(NULL),
 	fRunLabel(NULL),
 	fCanvas(NULL),
@@ -40,9 +40,9 @@ EMCALHLTgui::EMCALHLTgui() :
 	TGVerticalFrame *vframe = new TGVerticalFrame(this);
 
 	fViewSelection = new TGListBox(vframe, 1);
-	fViewSelection->Resize(400, 200);
+	fViewSelection->Resize(400, 800);
 	fViewSelection->Connect("Selected(Int_t)", "EMCALHLTgui", this, "ChangeView(Int_t)");
-	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsTop));
+	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsTop|kLHintsExpandY));
 
 	fRunLabel = new TGLabel(vframe);
 	fRunLabel->SetText(Form("Run: %d", fRunNumber));
@@ -50,8 +50,8 @@ EMCALHLTgui::EMCALHLTgui() :
 
 	AddFrame(vframe, new TGLayoutHints(kLHintsLeft|kLHintsExpandY,10,10,10,10));
 
-	fCanvas = new TRootEmbeddedCanvas("plot", this, 600, 400);
-	AddFrame(fCanvas, new TGLayoutHints(kLHintsRight|kLHintsExpandY, 10, 10, 10, 10));
+	fCanvas = new TRootEmbeddedCanvas("plot", this, 1024, 768);
+	AddFrame(fCanvas, new TGLayoutHints(kLHintsRight|kLHintsExpandX|kLHintsExpandY, 10, 10, 10, 10));
 	
 	MapSubwindows();
 	MapWindow();
@@ -132,15 +132,17 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	}
 
 	for(std::vector<std::string>::const_iterator optiter = drawable.GetOptions().begin(); optiter != drawable.GetOptions().end(); ++optiter){
+		std::cout << "drawoptions " << *optiter <<std::endl;
 		std::string key, value;
 		size_t delim;
 		if((delim = optiter->find("=")) != std::string::npos){
-			key = optiter->substr(0, delim - 1);
+			key = optiter->substr(0, delim);
 			value = optiter->substr(delim+1, optiter->length() - 1);
 		} else {
 			key = *optiter;
 			value = "";
 		}
+		//std::cout << "Key"	
 		if(key == "drawoption") drawoption = value;
 		if(key == "color"){
 			Color_t col = FindColor(value);
@@ -153,6 +155,7 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	}
 
 	if(drawsame && (drawoption.find("same") == std::string::npos)) drawoption += "same";
+	std::cout << "Histogram " << hist->GetName() << ", draw option " << drawoption << std::endl;
 	hist->Draw(drawoption.c_str());
 }
 

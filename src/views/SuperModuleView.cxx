@@ -5,7 +5,7 @@
  *      Author: saiola
  */
 
-#include "SuperModuleView.h"
+#include "views/SuperModuleView.h"
 
 #include <sstream>
 
@@ -17,7 +17,7 @@ View() {
   mystream << histname << "_" << det;
   SetName(mystream.str());
 
-  mystream.clear();
+  mystream.str(std::string());
   mystream << histtitle << ": " << det;
   SetTitle(mystream.str());
 
@@ -32,7 +32,7 @@ View() {
 	  // 0 1
 	  int ipad = 2 * (iSM % 2) + npads - iSM - 2;
 	  ViewPad *pad = new ViewPad;
-	  mystream.clear();
+	  mystream.str(std::string());
 	  mystream << "EMCTRQA_" << histname << "_SM" << iSM;
 	  pad->AddDrawable(mystream.str(), "drawoption=colz");
 	  SetPad(ipad, pad);

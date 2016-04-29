@@ -7,8 +7,8 @@
 
 #include <views/FastORHitsView.h>
 
-FastORHitsView::FastORHitsView() : View("FastOR_hits", "FastOR hits") {
-
+FastORHitsView::FastORHitsView() : View("FastOR_hits", "FastOR hits")
+{
 	SetNumberOfPads(4);
 
 	ViewPad *l0amppad = new ViewPad;

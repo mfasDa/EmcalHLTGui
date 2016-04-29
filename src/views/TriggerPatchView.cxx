@@ -25,13 +25,13 @@ View() {
   ViewPad *maxpos = new ViewPad;
   mystream.str(std::string());
   mystream << "EMCTRQA_histMaxEdgePos" << patchname << patchtype;
-  maxpos->AddDrawable(mystream.str(), "drawoption=colz");
+  maxpos->AddDrawable(mystream.str(), "drawoption=colz;drawtru");
   SetPad(0, maxpos);
 
   ViewPad *amppos = new ViewPad;
   mystream.str(std::string());
   mystream << "EMCTRQA_histAmpEdgePos" << patchname << patchtype;
-  amppos->AddDrawable(mystream.str(), "drawoption=colz");
+  amppos->AddDrawable(mystream.str(), "drawoption=colz;drawtru");
   SetPad(1, amppos);
 }
 

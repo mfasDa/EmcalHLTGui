@@ -65,6 +65,7 @@ public:
 	//void Update();
 	void ChangeView(Int_t viewentry);
 	void RedrawView();
+	void DrawTRUgrid(TVirtualPad *output);
 
 	ClassDef(EMCALHLTgui, 1)
 };

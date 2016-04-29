@@ -10,6 +10,8 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TLine.h>
+#include <TStyle.h>
 
 #include <TGWindow.h>
 #include <TGLabel.h>
@@ -35,6 +37,8 @@ EMCALHLTgui::EMCALHLTgui() :
 	fDataHandler(NULL),
 	fTimer(NULL)
 {
+  gStyle->SetOptStat(0);
+
 	SetWindowName("EMCAL HLT Monitor");
 
 	TGVerticalFrame *vframe = new TGVerticalFrame(this);
@@ -101,13 +105,14 @@ void EMCALHLTgui::RedrawView(){
 		TVirtualPad * mypad = internalCanvas->cd(ipad);
 		const ViewPad *currentpad = myview->GetPad(ipad-1);
 		if(!currentpad) continue;
-		HandlePadOptions(mypad, currentpad);
 
 		int ndrawable = 0;
 		for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
 			ProcessDrawable(*(*diter), diter != currentpad->GetListOfDrawables().begin());
 			ndrawable++;
 		}
+
+		HandlePadOptions(mypad, currentpad);
 		mypad->Update();
 	}
 
@@ -121,7 +126,46 @@ void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
 		if(*optiter == "logx") output->SetLogx();
 		if(*optiter == "logy") output->SetLogy();
 		if(*optiter == "logz") output->SetLogz();
+		if(*optiter == "drawtru") DrawTRUgrid(output);
 	}
+}
+
+void EMCALHLTgui::DrawTRUgrid(TVirtualPad *output){
+  output->cd();
+  TLine* line = 0;
+  // Draw grid for TRUs in full EMCal SMs
+  for (int x = 8; x < 48; x+=8) {
+    line = new TLine(x, 0, x, 60);
+    line->Draw();
+  }
+  for (int y = 12; y <= 60; y+=12) {
+    line = new TLine(0, y, 48, y);
+    line->Draw();
+  }
+  // Draw grid for TRUs in 1/3 EMCal SMs
+  line = new TLine(0, 64, 48, 64);
+  line->Draw();
+  line = new TLine(24, 60, 24, 64);
+  line->Draw();
+
+  // Draw grid for TRUs in 2/3 DCal SMs
+  for (int x = 8; x < 48; x+=8) {
+    if (x == 24) continue; // skip PHOS hole
+    line = new TLine(x, 64, x, 100);
+    line->Draw();
+  }
+  for (int y = 76; y < 100; y+=12) {
+    line = new TLine(0, y, 16, y);
+    line->Draw();
+    // skip PHOS hole
+    line = new TLine(32, y, 48, y);
+    line->Draw();
+  }
+  // Draw grid for TRUs in 1/3 DCal SMs
+  line = new TLine(0, 100, 48, 100);
+  line->Draw();
+  line = new TLine(24, 100, 24, 104);
+  line->Draw();
 }
 
 void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){

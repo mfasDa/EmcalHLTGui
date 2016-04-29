@@ -8,7 +8,8 @@ DEPSRC:=src/ViewHandler.cxx \
 		src/EMCALHLTgui.cxx \
 		src/views/FastORHitsView.cxx \
 		src/views/SuperModuleView.cxx \
-		src/views/TriggerPatchView.cxx
+		src/views/TriggerPatchView.cxx \
+		src/views/Simple2DView.cxx
 		
 SRCS=$(DEPSRC) $(APPSRC)
 		

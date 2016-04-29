@@ -371,7 +371,7 @@ int emcalzmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* 
   
   //update the list of streamers used
   if (streamers) {
-    const TList* streamerInfos = tmessage->GetStreamerInfos();
+    const TCollection* streamerInfos = tmessage->GetStreamerInfos();
     if (streamerInfos) {
       TIter nextInfo(streamerInfos);
       TStreamerInfo* info=NULL;
@@ -533,7 +533,7 @@ int emcalzmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socke
   
   //first update the list of streamers used
   if (streamers) {
-    const TList* streamerInfos = tmessage->GetStreamerInfos();
+    const TCollection* streamerInfos = tmessage->GetStreamerInfos();
     if (streamerInfos) {
       TIter nextInfo(streamerInfos);
       TStreamerInfo* info=NULL;

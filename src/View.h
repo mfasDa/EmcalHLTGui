@@ -27,7 +27,7 @@ public:
 
 
 	void SetName(const std::string &name) { fHistname = name; }
-	const std::string GetName() const { return fHistname; }
+	const std::string &GetName() const { return fHistname; }
 
 };
 

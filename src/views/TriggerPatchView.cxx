@@ -11,7 +11,7 @@
 TriggerPatchView::TriggerPatchView(const std::string& patchname, const std::string& patchtype) :
 View() {
 
-	SetNumberOfPads(4);
+	SetNumberOfPads(2);
 
 	std::stringstream mystream;
 
@@ -22,37 +22,17 @@ View() {
   mystream << "Trigger patches: " << patchname << ", " << patchtype;
   SetTitle(mystream.str());
 
-	ViewPad *npatches = new ViewPad;
-	npatches->AddOption("logy");
-	mystream.str(std::string());
-	mystream << "EMCTRQA_histEMCalNPatches" << patchname << patchtype;
-	npatches->AddDrawable(mystream.str(), "color=blue");
-  mystream.str(std::string());
-  mystream << "EMCTRQA_histDCalNPatches" << patchname << patchtype;
-  npatches->AddDrawable(mystream.str(), "color=red;drawoption=same");
-	SetPad(0, npatches);
-
-  ViewPad *maxpatch = new ViewPad;
-  maxpatch->AddOption("logy");
-  mystream.str(std::string());
-  mystream << "EMCTRQA_histEMCalMaxPatchAmp" << patchname << patchtype;
-  maxpatch->AddDrawable(mystream.str(), "color=blue");
-  mystream.str(std::string());
-  mystream << "EMCTRQA_histDCalMaxPatchAmp" << patchname << patchtype;
-  maxpatch->AddDrawable(mystream.str(), "color=red;drawoption=same");
-  SetPad(1, maxpatch);
-
   ViewPad *maxpos = new ViewPad;
   mystream.str(std::string());
   mystream << "EMCTRQA_histMaxEdgePos" << patchname << patchtype;
   maxpos->AddDrawable(mystream.str(), "drawoption=colz");
-  SetPad(2, maxpos);
+  SetPad(0, maxpos);
 
   ViewPad *amppos = new ViewPad;
   mystream.str(std::string());
   mystream << "EMCTRQA_histAmpEdgePos" << patchname << patchtype;
   amppos->AddDrawable(mystream.str(), "drawoption=colz");
-  SetPad(3, amppos);
+  SetPad(1, amppos);
 }
 
 TriggerPatchView::~TriggerPatchView() {

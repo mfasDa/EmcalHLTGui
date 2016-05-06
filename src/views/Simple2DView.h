@@ -12,7 +12,7 @@
 
 class Simple2DView: public View {
 public:
-  Simple2DView(const std::string& histName, const std::string& title, const std::string& options);
+  Simple2DView(const std::string& histName, const std::string& title, const std::string& options, const std::string& padoptions="");
   virtual ~Simple2DView();
 };
 

@@ -47,22 +47,24 @@ public:
 };
 
 class View {
-	std::string 						fName;
-	std::string							fTitle;
-	int									fNPads;
+	std::string 					  	fName;
+	std::string						  	fTitle;
+	int                       fNRowPads;
+	int                       fNColPads;
 
-	std::map<int, ViewPad *>			fPads;
+	std::map<std::pair<int,int>, ViewPad *>  fPads;
 public:
 	View();
 	View(const std::string &name, const std::string &title);
 	virtual ~View() {}
 
-	void SetNumberOfPads(int npads) { fNPads = npads; }
+	void SetNumberOfPads(int col, int row) { fNRowPads = col; fNColPads = row; }
 	void DefinePad();
 
-	int GetNumberOfPads() const { return fNPads; }
-	const ViewPad* GetPad(int pad) const;
-	void SetPad(int padId, ViewPad *padDef);
+	int GetNumberOfRowPads() const { return fNRowPads; }
+	int GetNumberOfColPads() const { return fNColPads; }
+	const ViewPad* GetPad(int row, int col) const;
+	void SetPad(int row, int col, ViewPad *padDef);
 
 	std::string GetName() const { return fName; }
 	std::string GetTitle() const { return fTitle; }

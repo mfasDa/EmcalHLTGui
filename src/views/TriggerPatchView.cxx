@@ -11,7 +11,7 @@
 TriggerPatchView::TriggerPatchView(const std::string& patchname, const std::string& patchtype) :
 View() {
 
-	SetNumberOfPads(2);
+	SetNumberOfPads(1, 2);
 
 	std::stringstream mystream;
 
@@ -23,16 +23,18 @@ View() {
   SetTitle(mystream.str());
 
   ViewPad *maxpos = new ViewPad;
+  maxpos->AddOption("drawtru");
   mystream.str(std::string());
   mystream << "EMCTRQA_histMaxEdgePos" << patchname << patchtype;
-  maxpos->AddDrawable(mystream.str(), "drawoption=colz;drawtru");
-  SetPad(0, maxpos);
+  maxpos->AddDrawable(mystream.str(), "drawoption=colz");
+  SetPad(0, 0, maxpos);
 
   ViewPad *amppos = new ViewPad;
+  amppos->AddOption("drawtru");
   mystream.str(std::string());
   mystream << "EMCTRQA_histAmpEdgePos" << patchname << patchtype;
-  amppos->AddDrawable(mystream.str(), "drawoption=colz;drawtru");
-  SetPad(1, amppos);
+  amppos->AddDrawable(mystream.str(), "drawoption=colz");
+  SetPad(0, 1, amppos);
 }
 
 TriggerPatchView::~TriggerPatchView() {

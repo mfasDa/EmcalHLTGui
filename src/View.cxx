@@ -11,7 +11,8 @@
 View::View() :
   fName("DefaultView"),
   fTitle("DefaultView"),
-  fNPads(0),
+  fNRowPads(0),
+  fNColPads(0),
   fPads()
 {
 
@@ -20,26 +21,28 @@ View::View() :
 View::View(const std::string &name, const std::string &title) :
 	fName(name),
 	fTitle(title),
-	fNPads(0),
+	fNRowPads(0),
+	fNColPads(0),
 	fPads()
 {
 
 }
 
-const ViewPad *View::GetPad(int pad) const {
-	if(pad >= fNPads) return NULL;
-	std::map<int, ViewPad *>::const_iterator mypad = fPads.find(pad);
+const ViewPad *View::GetPad(int row, int col) const {
+	if(row < 0 || row >= fNRowPads) return NULL;
+	if(col < 0 || row >= fNColPads) return NULL;
+	std::map<std::pair<int,int>, ViewPad *>::const_iterator mypad = fPads.find(std::pair<int,int>(row,col));
 	if(mypad != fPads.end()) return mypad->second;
 	return NULL;
 }
 
-void View::SetPad(int padId, ViewPad *padDef){
-	std::map<int, ViewPad *>::iterator mypad = fPads.find(padId);
+void View::SetPad(int row, int col, ViewPad *padDef){
+	std::map<std::pair<int,int>, ViewPad *>::iterator mypad = fPads.find(std::pair<int,int>(row,col));
 	if(mypad != fPads.end()){
 		delete mypad->second;
 		mypad->second = padDef;
 	} else {
-		fPads.insert(std::pair<int, ViewPad *>(padId, padDef));
+		fPads.insert(std::pair<std::pair<int,int>, ViewPad *>(std::pair<int,int>(row,col), padDef));
 	}
 }
 

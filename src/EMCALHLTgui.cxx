@@ -94,30 +94,31 @@ void EMCALHLTgui::ChangeView(Int_t viewentry){
 }
 
 void EMCALHLTgui::RedrawView(){
-	const View *myview = fViewHandler->FindView(fCurrentView);
-	if(!myview) return;
+  const View *myview = fViewHandler->FindView(fCurrentView);
+  if(!myview) return;
 
-	TCanvas *internalCanvas = fCanvas->GetCanvas();
-	internalCanvas->Clear();
-	internalCanvas->DivideSquare(myview->GetNumberOfPads());
+  TCanvas *internalCanvas = fCanvas->GetCanvas();
+  internalCanvas->Clear();
+  internalCanvas->Divide(myview->GetNumberOfRowPads(), myview->GetNumberOfColPads());
 
-	for(Int_t ipad = 1; ipad <= myview->GetNumberOfPads() ; ipad++){
-		TVirtualPad * mypad = internalCanvas->cd(ipad);
-		const ViewPad *currentpad = myview->GetPad(ipad-1);
-		if(!currentpad) continue;
+  for(Int_t row = 1; row <= myview->GetNumberOfRowPads() ; row++){
+    for(Int_t col = 1; col <= myview->GetNumberOfColPads() ; col++){
+      TVirtualPad * mypad = internalCanvas->cd(myview->GetNumberOfColPads()*row + col);
+      const ViewPad *currentpad = myview->GetPad(row-1, col-1);
+      if(!currentpad) continue;
 
-		int ndrawable = 0;
-		for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
-			ProcessDrawable(*(*diter), diter != currentpad->GetListOfDrawables().begin());
-			ndrawable++;
-		}
+      int ndrawable = 0;
+      for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
+        ProcessDrawable(*(*diter), diter != currentpad->GetListOfDrawables().begin());
+        ndrawable++;
+      }
 
-		HandlePadOptions(mypad, currentpad);
-		mypad->Update();
-	}
-
-	internalCanvas->Update();
-	fCurrentView = myview->GetName();
+      HandlePadOptions(mypad, currentpad);
+      mypad->Update();
+    }
+  }
+  internalCanvas->Update();
+  fCurrentView = myview->GetName();
 }
 
 void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){

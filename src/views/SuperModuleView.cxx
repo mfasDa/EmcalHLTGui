@@ -23,7 +23,7 @@ View() {
 
   int npads = (maxSM - minSM + 1);
 
-	SetNumberOfPads(npads);
+	SetNumberOfPads(npads/2, 2);
 
 	for (int iSM = minSM; iSM <= maxSM; iSM++) {
 	  // this will place SM in their physical position, e.g.
@@ -31,11 +31,13 @@ View() {
 	  // 2 3
 	  // 0 1
 	  int ipad = 2 * (iSM % 2) + maxSM - iSM - 1;
+	  int row = ipad % 2;
+	  int col = ipad / 2;
 	  ViewPad *pad = new ViewPad;
 	  mystream.str(std::string());
 	  mystream << "EMCTRQA_" << histname << "_SM" << iSM;
 	  pad->AddDrawable(mystream.str(), "drawoption=colz");
-	  SetPad(ipad, pad);
+	  SetPad(row, col, pad);
 	}
 }
 

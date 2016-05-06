@@ -99,11 +99,11 @@ void EMCALHLTgui::RedrawView(){
 
   TCanvas *internalCanvas = fCanvas->GetCanvas();
   internalCanvas->Clear();
-  internalCanvas->Divide(myview->GetNumberOfRowPads(), myview->GetNumberOfColPads());
+  internalCanvas->Divide(myview->GetNumberOfColPads(), myview->GetNumberOfRowPads());
 
   for(Int_t row = 1; row <= myview->GetNumberOfRowPads() ; row++){
     for(Int_t col = 1; col <= myview->GetNumberOfColPads() ; col++){
-      TVirtualPad * mypad = internalCanvas->cd(myview->GetNumberOfColPads()*row + col);
+      TVirtualPad * mypad = internalCanvas->cd(myview->GetNumberOfColPads()*(row-1) + col);
       const ViewPad *currentpad = myview->GetPad(row-1, col-1);
       if(!currentpad) continue;
 

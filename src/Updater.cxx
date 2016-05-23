@@ -24,6 +24,7 @@ Updater::~Updater() {
 bool Updater::Notify(){
 	if(fDataHandler->Update()){
 		fGui->SetRunNumber(fDataHandler->GetRunNumber());
+		fGui->SetNumberOfEvents(fDataHandler->GetNumberOfEvents());
 		fGui->RedrawView();
 		Reset();
 		return true;

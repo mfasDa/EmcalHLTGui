@@ -39,6 +39,7 @@ public:
 	TH1 *FindHistogram(const std::string & histname);
 
 	int GetRunNumber() const { return fRunNumber; }
+	int GetNumberOfEvents() const;
 	const std::string &GetHLTMode() const { return fHLTmode; }
 
 	void Clear();

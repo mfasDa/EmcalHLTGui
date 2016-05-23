@@ -20,6 +20,7 @@
 
 class TGMainFrame;
 class TGListBox;
+class TGButton;
 class TGLabel;
 class TRootEmbeddedCanvas;
 class TVirtualPad;
@@ -35,14 +36,17 @@ class EMCALHLTgui : public TGMainFrame {
 
 	// View
 	TGListBox					*fViewSelection;
-	TRootEmbeddedCanvas			*fCanvas;
+	TRootEmbeddedCanvas				*fCanvas;
 	TGLabel						*fRunLabel;
+	TGLabel						*fEventLabel;
+	TGButton					*fResetButton;
 
 	// Model
 	ViewHandler					*fViewHandler;
-	std::map<int, std::string>	fViewLookup;
+	std::map<int, std::string>			fViewLookup;
 	std::string					fCurrentView;
 	int 						fRunNumber;
+	int 						fNumberOfEvents;
 
 	// Controller
 	DataHandler					*fDataHandler;
@@ -62,10 +66,13 @@ public:
 
 	void StartUpdateCycle();
 	void SetRunNumber(Int_t runnumber);
+	void SetNumberOfEvents(int nevents);
 	//void Update();
 	void ChangeView(Int_t viewentry);
 	void RedrawView();
 	void DrawTRUgrid(TVirtualPad *output);
+
+	void ResetCallback();
 
 	ClassDef(EMCALHLTgui, 1)
 };

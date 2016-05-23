@@ -16,6 +16,7 @@
 #include <TGWindow.h>
 #include <TGLabel.h>
 #include <TGListBox.h>
+#include <TGButton.h>
 #include <TRootEmbeddedCanvas.h>
 
 #include "DataHandler.h"
@@ -29,15 +30,18 @@ EMCALHLTgui::EMCALHLTgui() :
 	TGMainFrame(gClient->GetRoot(), 1200, 8000, kHorizontalFrame),
 	fViewSelection(NULL),
 	fRunLabel(NULL),
+	fEventLabel(NULL),
+	fResetButton(NULL),
 	fCanvas(NULL),
 	fViewHandler(NULL),
 	fCurrentView(""),
 	fViewLookup(),
 	fRunNumber(0),
+	fNumberOfEvents(0),
 	fDataHandler(NULL),
 	fTimer(NULL)
 {
-  gStyle->SetOptStat(0);
+  	gStyle->SetOptStat(0);
 
 	SetWindowName("EMCAL HLT Monitor");
 
@@ -48,9 +52,20 @@ EMCALHLTgui::EMCALHLTgui() :
 	fViewSelection->Connect("Selected(Int_t)", "EMCALHLTgui", this, "ChangeView(Int_t)");
 	vframe->AddFrame(fViewSelection, new TGLayoutHints(kLHintsTop|kLHintsExpandY));
 
-	fRunLabel = new TGLabel(vframe);
+	TGHorizontalFrame *steerframe = new TGHorizontalFrame(vframe);
+	vframe->AddFrame(steerframe, new TGLayoutHints(kLHintsBottom));
+
+	fRunLabel = new TGLabel(steerframe);
 	fRunLabel->SetText(Form("Run: %d", fRunNumber));
-	vframe->AddFrame(fRunLabel, new TGLayoutHints(kLHintsBottom));
+	steerframe->AddFrame(fRunLabel, new TGLayoutHints(kLHintsLeft,10,10,3,3));
+
+	fEventLabel = new TGLabel(steerframe);
+	fEventLabel->SetText(Form("Number of Event: %d", fNumberOfEvents));
+	steerframe->AddFrame(fEventLabel, new TGLayoutHints(kLHintsLeft, 10,10,3,3));
+
+	fResetButton = new TGTextButton(steerframe, "&Reset");
+	fResetButton->Connect("Clicked()", "EMCALHLTgui", this, "ResetCallback()");
+	steerframe->AddFrame(fResetButton, new TGLayoutHints(kLHintsLeft, 10, 10, 3, 3));
 
 	AddFrame(vframe, new TGLayoutHints(kLHintsLeft|kLHintsExpandY,10,10,10,10));
 
@@ -119,6 +134,9 @@ void EMCALHLTgui::RedrawView(){
   }
   internalCanvas->Update();
   fCurrentView = myview->GetName();
+
+  // Update the number of events
+  SetNumberOfEvents(fDataHandler->GetNumberOfEvents());
 }
 
 void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
@@ -133,6 +151,8 @@ void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
 
 void EMCALHLTgui::DrawTRUgrid(TVirtualPad *output){
   output->cd();
+  gStyle->SetLineStyle(kDashed);
+  gStyle->SetLineWidth(2);
   TLine* line = 0;
   // Draw grid for TRUs in full EMCal SMs
   for (int x = 8; x < 48; x+=8) {
@@ -178,7 +198,7 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	}
 
 	for(std::vector<std::string>::const_iterator optiter = drawable.GetOptions().begin(); optiter != drawable.GetOptions().end(); ++optiter){
-		std::cout << "drawoptions " << *optiter <<std::endl;
+		//std::cout << "drawoptions " << *optiter <<std::endl;
 		std::string key, value;
 		size_t delim;
 		if((delim = optiter->find("=")) != std::string::npos){
@@ -201,7 +221,7 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	}
 
 	if(drawsame && (drawoption.find("same") == std::string::npos)) drawoption += "same";
-	std::cout << "Histogram " << hist->GetName() << ", draw option " << drawoption << std::endl;
+	//std::cout << "Histogram " << hist->GetName() << ", draw option " << drawoption << std::endl;
 	hist->Draw(drawoption.c_str());
 }
 
@@ -221,8 +241,18 @@ void EMCALHLTgui::SetRunNumber(int runnumber) {
 	}
 }
 
+void EMCALHLTgui::SetNumberOfEvents(int nevents){
+	fNumberOfEvents = nevents;
+	fEventLabel->SetText(Form("Number of events: %d", fNumberOfEvents));
+	Layout();
+}
+
 void EMCALHLTgui::StartUpdateCycle(){
 	if(fDataHandler->Update()) SetRunNumber(fDataHandler->GetRunNumber());
 	fTimer->SetDataHandler(fDataHandler);
 	fTimer->TurnOn();
+}
+
+
+void EMCALHLTgui::ResetCallback(){
 }

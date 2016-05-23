@@ -110,6 +110,12 @@ void DataHandler::GetData(){
 		emcalzmq_msg_iter_data(i, object);
 		fData.push_back(object);
 
+		// Check how many events are in the message
+		if(!TString(object->GetName()).CompareTo("EMCTRQA_histEvents")){
+			TH1F *histEventCounter = (TH1F *)object;
+			printf("Message contains data from %d events\n", static_cast<Int_t>(histEventCounter->GetBinContent(1)));
+		}
+
 	} //for iterator i
 	emcalzmq_msg_close(&message);
 
@@ -125,4 +131,18 @@ bool DataHandler::Update(){
 	}
 	fLock = false;
 	return false;
+}
+
+int DataHandler::GetNumberOfEvents() const {
+	int nevents = 0;
+	while(fLock) gSystem->Sleep(1);
+	//fLock = true;
+	TObject *histev(NULL);
+	for(std::vector<TObject *>::const_iterator eniter = fData.begin(); eniter != fData.end(); ++eniter){
+		if(!TString((*eniter)->GetName()).CompareTo("EMCTRQA_histEvents")){
+			nevents = static_cast<int>(static_cast<TH1 *>(*eniter)->GetBinContent(1));
+		}
+	}
+	//fLock = false;
+	return nevents;
 }

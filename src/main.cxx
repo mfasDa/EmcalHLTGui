@@ -27,8 +27,8 @@ int main(int argc, char **argv){
 	// Define views
 	myviewhandler->InsertView(new FastORHitsView);
 
-  myviewhandler->InsertView(new Simple2DView("EMCTRQA_histFastORL0Amp", "L0 amplitudes", "drawoption=colz", "drawtru;logz"));
-  myviewhandler->InsertView(new Simple2DView("EMCTRQA_histFastORL1Amp", "L1 amplitudes", "drawoption=colz", "drawtru;logz"));
+  myviewhandler->InsertView(new Simple2DView("EMCTRQA_histFastORL0Amp", "L0 amplitudes", "drawoption=colz", "drawtru"));
+  myviewhandler->InsertView(new Simple2DView("EMCTRQA_histFastORL1Amp", "L1 amplitudes", "drawoption=colz", "drawtru"));
   myviewhandler->InsertView(new Simple2DView("EMCTRQA_histFastORL0Time", "L0 trigger time", "drawoption=colz"));
 
   myviewhandler->InsertView(new TriggerPatchView("EMCL0", "Online"));

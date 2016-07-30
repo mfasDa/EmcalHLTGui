@@ -3,7 +3,9 @@ APPSRC=src/main.cxx
 DEPSRC:=src/ViewHandler.cxx \
 		src/View.cxx \
 		src/EmcalZMQhelpers.cxx \
+		src/Synchronized.cxx \
 		src/DataHandler.cxx \
+		src/HistogramHandler.cxx \
 		src/Updater.cxx \
 		src/EMCALHLTgui.cxx \
 		src/views/FastORHitsView.cxx \

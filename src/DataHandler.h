@@ -1,25 +1,27 @@
-/*
- * DataHandler.h
- *
- *  Created on: 15.04.2016
- *      Author: markusfasel
- */
-
 #ifndef DATAHANDLER_H_
 #define DATAHANDLER_H_
+/****************************************************************************************
+ *  Simple monitoring program for ALICE EMCAL QA histograms provided by the ALICE HLT   *
+ *  Copyright (C) 2016 The ALICE collaboration                                          *
+ *  See cxx file for more details														*
+ ****************************************************************************************/
 
 #include <string>
 #include <vector>
 #include <TString.h>
+#include <TH1.h>
+#include "HistogramHandler.h"
+#include "Synchronized.h"
+#include "shared_ptr.h"
 
 class TH1;
 class TObject;
 
-class DataHandler {
+class DataHandler : public Synchronized {
 	int 							fRunNumber;
+	int 							fNumberOfEvents;
 	std::string						fHLTmode;
-	std::vector<TObject *>					fData;
-	bool							fLock;
+	HistogramHandler					fData;
 
 	// ZMQ stuff
 	void* fZMQcontext;
@@ -36,10 +38,11 @@ public:
 	virtual ~DataHandler();
 
 	bool Update();
-	TH1 *FindHistogram(const std::string & histname);
+	EMCALHLTGUI::shared_ptr<TH1> FindHistogram(const std::string & histname);
+	HistogramHandler &GetHistogramHandler() { return fData; }
 
 	int GetRunNumber() const { return fRunNumber; }
-	int GetNumberOfEvents() const;
+	int GetNumberOfEvents() const { return fNumberOfEvents; }
 	const std::string &GetHLTMode() const { return fHLTmode; }
 
 	void Clear();

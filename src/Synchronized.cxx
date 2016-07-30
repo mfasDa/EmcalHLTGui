@@ -15,30 +15,15 @@
  *  You should have received a copy of the GNU General Public License                   *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.               *
  ****************************************************************************************/
-#include <views/FastORHitsView.h>
+#include <Synchronized.h>
+#include <TSystem.h>
 
-FastORHitsView::FastORHitsView() : View("FastOR_hits", "FastOR hits")
+Synchronized::Synchronized():
+	fLock(false)
 {
-	SetNumberOfPads(2,2);
-
-	ViewPad *l0amppad = new ViewPad;
-	l0amppad->AddDrawable("EMCTRQA_histFastORL0", "");
-	SetPad(0, 0, l0amppad);
-
-	ViewPad *l1amppad = new ViewPad;
-	l1amppad->AddDrawable("EMCTRQA_histFastORL1", "");
-	SetPad(0, 1, l1amppad);
-
-	ViewPad *l0largeamppad = new ViewPad;
-	l0largeamppad->AddDrawable("EMCTRQA_histFastORL0LargeAmp", "");
-	SetPad(1, 0, l0largeamppad);
-
-	ViewPad *l1largeamppad = new ViewPad;
-	l1largeamppad->AddDrawable("EMCTRQA_histFastORL1LargeAmp", "");
-	SetPad(1, 1, l1largeamppad);
 
 }
 
-FastORHitsView::~FastORHitsView() {
+void Synchronized::Wait() const {
+	while(fLock) gSystem->Sleep(1);
 }
-

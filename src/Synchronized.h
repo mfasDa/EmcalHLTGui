@@ -1,26 +1,25 @@
-#ifndef UPDATER_H_
-#define UPDATER_H_
+#ifndef SYNCHRONIZED_H
+#define SYNCHRONIZED_H
 /****************************************************************************************
  *  Simple monitoring program for ALICE EMCAL QA histograms provided by the ALICE HLT   *
  *  Copyright (C) 2016 The ALICE collaboration                                          *
  *  See cxx file for more details														*
  ****************************************************************************************/
-#include <TTimer.h>
 
-class EMCALHLTgui;
-class DataHandler;
+class Synchronized{
+protected:
+	bool			fLock;			///< Semaphore
 
-class Updater : public TTimer {
-	DataHandler				*fDataHandler;
-	EMCALHLTgui				*fGui;
 public:
-	Updater(Long_t timeout = 0);
-	virtual ~Updater();
+	Synchronized();
+	~Synchronized() {}
 
-	void SetGUI(EMCALHLTgui *gui) { fGui = gui; }
-	void SetDataHandler(DataHandler *handler) { fDataHandler = handler; }
+	void Lock() { fLock = true; }
+	void Unlock() { fLock = false; }
 
-	virtual bool Notify();
+	bool IsLocked() { return fLock; }
+
+	void Wait() const;
 };
 
-#endif /* UPDATER_H_ */
+#endif

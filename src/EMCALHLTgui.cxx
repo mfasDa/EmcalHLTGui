@@ -1,9 +1,20 @@
-/*
- * EMCALHLTgui.cxx
- *
- *  Created on: 15.04.2016
- *      Author: markusfasel
- */
+/****************************************************************************************
+ *  Simple monitoring program for ALICE EMCAL QA histograms provided by the ALICE HLT   *
+ *  Copyright (C) 2016 The ALICE collaboration                                          *
+ *                                                                                      *
+ *  This program is free software: you can redistribute it and/or modify                *
+ *  it under the terms of the GNU General Public License as published by                *
+ *  the Free Software Foundation, either version 3 of the License, or                   *
+ *  (at your option) any later version.                                                 *
+ *                                                                                      *
+ *  This program is distributed in the hope that it will be useful,                     *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of                      *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                       *
+ *  GNU General Public License for more details.                                        *
+ *                                                                                      *
+ *  You should have received a copy of the GNU General Public License                   *
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.               *
+ ****************************************************************************************/
 #include <iostream>
 
 #include "EMCALHLTgui.h"
@@ -20,6 +31,7 @@
 #include <TRootEmbeddedCanvas.h>
 
 #include "DataHandler.h"
+#include "HistogramHandler.h"
 #include "Updater.h"
 #include "View.h"
 #include "ViewHandler.h"
@@ -35,9 +47,11 @@ EMCALHLTgui::EMCALHLTgui() :
 	fCanvas(NULL),
 	fViewHandler(NULL),
 	fCurrentView(""),
+	fCurrentHistos(),
 	fViewLookup(),
 	fRunNumber(0),
 	fNumberOfEvents(0),
+	fNumberOfEventsMonitor(0),
 	fDataHandler(NULL),
 	fTimer(NULL)
 {
@@ -77,6 +91,7 @@ EMCALHLTgui::EMCALHLTgui() :
 	Resize();
 	MapRaised();
 
+	std::cout << "view constructed, setting timer ..." << std::endl;
 	fTimer = new Updater(10000);
 	fTimer->SetGUI(this);
 }
@@ -109,34 +124,39 @@ void EMCALHLTgui::ChangeView(Int_t viewentry){
 }
 
 void EMCALHLTgui::RedrawView(){
-  const View *myview = fViewHandler->FindView(fCurrentView);
-  if(!myview) return;
+  	const View *myview = fViewHandler->FindView(fCurrentView);
+  	if(!myview) return;
 
-  TCanvas *internalCanvas = fCanvas->GetCanvas();
-  internalCanvas->Clear();
-  internalCanvas->Divide(myview->GetNumberOfColPads(), myview->GetNumberOfRowPads());
+  	fCurrentHistos.clear();
+  	TCanvas *internalCanvas = fCanvas->GetCanvas();
+  	internalCanvas->Clear();
+  	internalCanvas->Divide(myview->GetNumberOfColPads(), myview->GetNumberOfRowPads());
 
-  for(Int_t row = 1; row <= myview->GetNumberOfRowPads() ; row++){
-    for(Int_t col = 1; col <= myview->GetNumberOfColPads() ; col++){
-      TVirtualPad * mypad = internalCanvas->cd(myview->GetNumberOfColPads()*(row-1) + col);
-      const ViewPad *currentpad = myview->GetPad(row-1, col-1);
-      if(!currentpad) continue;
+  	for(Int_t row = 1; row <= myview->GetNumberOfRowPads() ; row++){
+    		for(Int_t col = 1; col <= myview->GetNumberOfColPads() ; col++){
+      			TVirtualPad * mypad = internalCanvas->cd(myview->GetNumberOfColPads()*(row-1) + col);
+      			const ViewPad *currentpad = myview->GetPad(row-1, col-1);
+      			if(!currentpad) continue;
 
-      int ndrawable = 0;
-      for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
-        ProcessDrawable(*(*diter), diter != currentpad->GetListOfDrawables().begin());
-        ndrawable++;
-      }
+      			int ndrawable = 0;
+      			for(std::vector<ViewDrawable *>::const_iterator diter = currentpad->GetListOfDrawables().begin(); diter != currentpad->GetListOfDrawables().end(); ++diter){
+        			ProcessDrawable(*(*diter), diter != currentpad->GetListOfDrawables().begin());
+        			ndrawable++;
+      			}
 
-      HandlePadOptions(mypad, currentpad);
-      mypad->Update();
-    }
-  }
-  internalCanvas->Update();
-  fCurrentView = myview->GetName();
+      			HandlePadOptions(mypad, currentpad);
+      			mypad->Update();
+    		}
+  	}
+  	internalCanvas->Update();
+  	fCurrentView = myview->GetName();
 
-  // Update the number of events
-  SetNumberOfEvents(fDataHandler->GetNumberOfEvents());
+	// Debugging - get number of events shown in the histogram
+	int neventsMonitor = GetNumberOfEventsMonitor(), neventsTotal = fDataHandler->GetNumberOfEvents();
+	std::cout << "Found event hist with " << neventsMonitor << " events (total " << neventsTotal << ")" << std::endl;
+
+  	// Update the number of events
+  	SetNumberOfEvents(neventsTotal, neventsMonitor);
 }
 
 void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
@@ -150,48 +170,61 @@ void EMCALHLTgui::HandlePadOptions(TVirtualPad *output, const ViewPad *options){
 }
 
 void EMCALHLTgui::DrawTRUgrid(TVirtualPad *output){
-  output->cd();
-  gStyle->SetLineStyle(kDashed);
-  gStyle->SetLineWidth(2);
-  TLine* line = 0;
-  // Draw grid for TRUs in full EMCal SMs
-  for (int x = 8; x < 48; x+=8) {
-    line = new TLine(x, 0, x, 60);
-    line->Draw();
-  }
-  for (int y = 12; y <= 60; y+=12) {
-    line = new TLine(0, y, 48, y);
-    line->Draw();
-  }
-  // Draw grid for TRUs in 1/3 EMCal SMs
-  line = new TLine(0, 64, 48, 64);
-  line->Draw();
-  line = new TLine(24, 60, 24, 64);
-  line->Draw();
+  	output->cd();
+  	gStyle->SetLineStyle(kDashed);
+  	gStyle->SetLineWidth(2);
+  	TLine* line = 0;
+  	// Draw grid for TRUs in full EMCal SMs
+  	for (int x = 8; x < 48; x+=8) {
+    		line = new TLine(x, 0, x, 60);
+    		line->Draw();
+  	}
+  	for (int y = 12; y <= 60; y+=12) {
+    		line = new TLine(0, y, 48, y);
+    		line->Draw();
+  	}
+  	// Draw grid for TRUs in 1/3 EMCal SMs
+  	line = new TLine(0, 64, 48, 64);
+  	line->Draw();
+  	line = new TLine(24, 60, 24, 64);
+  	line->Draw();
 
-  // Draw grid for TRUs in 2/3 DCal SMs
-  for (int x = 8; x < 48; x+=8) {
-    if (x == 24) continue; // skip PHOS hole
-    line = new TLine(x, 64, x, 100);
-    line->Draw();
-  }
-  for (int y = 76; y < 100; y+=12) {
-    line = new TLine(0, y, 16, y);
-    line->Draw();
-    // skip PHOS hole
-    line = new TLine(32, y, 48, y);
-    line->Draw();
-  }
-  // Draw grid for TRUs in 1/3 DCal SMs
-  line = new TLine(0, 100, 48, 100);
-  line->Draw();
-  line = new TLine(24, 100, 24, 104);
-  line->Draw();
+  	// Draw grid for TRUs in 2/3 DCal SMs
+  	for (int x = 8; x < 48; x+=8) {
+    		if (x == 24) continue; // skip PHOS hole
+    		line = new TLine(x, 64, x, 100);
+    		line->Draw();
+  	}
+  	for (int y = 76; y < 100; y+=12) {
+    		line = new TLine(0, y, 16, y);
+    		line->Draw();
+    		// skip PHOS hole
+    		line = new TLine(32, y, 48, y);
+    		line->Draw();
+  	}
+  	// Draw grid for TRUs in 1/3 DCal SMs
+  	line = new TLine(0, 100, 48, 100);
+  	line->Draw();
+  	line = new TLine(24, 100, 24, 104);
+  	line->Draw();
+}
+
+
+int EMCALHLTgui::GetNumberOfEventsMonitor(){
+	// Method cannot be const due to locking issues
+	int result = 0;
+	EMCALHLTGUI::shared_ptr<TH1> eventhist = fDataHandler->FindHistogram("EMCTRQA_histEvents");
+	if(eventhist){
+		result = static_cast<int>(eventhist->GetBinContent(1));
+	} else {
+		std::cerr << "Event counter histogram not found in the data handler" << std::endl;
+	}
+	return result;
 }
 
 void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	std::string drawoption = "";
-	TH1 *hist = fDataHandler->FindHistogram(drawable.GetName());
+	EMCALHLTGUI::shared_ptr<TH1> hist = fDataHandler->FindHistogram(drawable.GetName());
 	if(!hist){
 		std::cerr << "Histogram " << drawable.GetName() << " not found" << std::endl;
 		return;
@@ -223,6 +256,7 @@ void EMCALHLTgui::ProcessDrawable(const ViewDrawable &drawable, bool drawsame){
 	if(drawsame && (drawoption.find("same") == std::string::npos)) drawoption += "same";
 	//std::cout << "Histogram " << hist->GetName() << ", draw option " << drawoption << std::endl;
 	hist->Draw(drawoption.c_str());
+	fCurrentHistos.push_back(hist);
 }
 
 Color_t EMCALHLTgui::FindColor(const std::string &colname) const{
@@ -241,13 +275,15 @@ void EMCALHLTgui::SetRunNumber(int runnumber) {
 	}
 }
 
-void EMCALHLTgui::SetNumberOfEvents(int nevents){
-	fNumberOfEvents = nevents;
-	fEventLabel->SetText(Form("Number of events: %d", fNumberOfEvents));
+void EMCALHLTgui::SetNumberOfEvents(int total, int monitor){
+	fNumberOfEvents = total;
+	if(monitor > -1) fNumberOfEventsMonitor = monitor;
+	fEventLabel->SetText(Form("Number of events: %d (Plotting %d)", fNumberOfEvents, fNumberOfEventsMonitor));
 	Layout();
 }
 
 void EMCALHLTgui::StartUpdateCycle(){
+	std::cout << "Starting regular update cycle ... " << std::endl;
 	if(fDataHandler->Update()) SetRunNumber(fDataHandler->GetRunNumber());
 	fTimer->SetDataHandler(fDataHandler);
 	fTimer->TurnOn();
@@ -255,4 +291,9 @@ void EMCALHLTgui::StartUpdateCycle(){
 
 
 void EMCALHLTgui::ResetCallback(){
+	// Set the new timestamp
+	std::cout << "Reset button called" << std::endl;
+	fDataHandler->GetHistogramHandler().SetTimeStamp();
+	SetNumberOfEvents(fDataHandler->GetNumberOfEvents(), GetNumberOfEventsMonitor());
+	RedrawView();
 }

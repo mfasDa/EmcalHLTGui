@@ -1,8 +1,24 @@
-#ifndef __AliZMQhelpers__
-#define __AliZMQhelpers__
+#ifndef __EmcalZMQhelpers__
+#define __EmcalZMQhelpers__
+/****************************************************************************************
+ * Copyright (c) 2016, The ALICE Collaboration                                          *
+ * All rights reserved.                                                                 *
+ *                                                                                      *
+ * This code is published under a BSD-style licencse. See cxx file for the license      *
+ * disclaimer                                                                           *
+ ****************************************************************************************/
 
+// Comment by Markus: This code is not original part of our software. It has to
+// be derived from corresponding code in AliRoot in order to be able to decode
+// messages obtained from the HLT. In order to be independent of given ALIROOT
+// installations the code is converted into a stand alone class and copied to
+// the project. This part of the code can consequently not be released under
+// the GPL v3 but instead is released under the BSD License, in agreement with 
+// the original author. Full credit goes to the original author Mikolaj Krzewicki
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 // some of it might be inspired by czmq.h
+// Changes by Markus: Make it a stand alone package and rename functios in order
+// to aviod naming clashes.
 
 namespace EMCalZMQhelpers {
   extern void* gZMQcontext; //a global ZMQ context

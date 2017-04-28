@@ -1,147 +1,114 @@
-#ifndef __EmcalZMQhelpers__
-#define __EmcalZMQhelpers__
-/****************************************************************************************
- * Copyright (c) 2016, The ALICE Collaboration                                          *
- * All rights reserved.                                                                 *
- *                                                                                      *
- * This code is published under a BSD-style licencse. See cxx file for the license      *
- * disclaimer                                                                           *
- ****************************************************************************************/
+#ifndef __EmcalHLTZMQhelpers__
+#define __EmcalHLTZMQhelpers__
 
-// Comment by Markus: This code is not original part of our software. It has to
-// be derived from corresponding code in AliRoot in order to be able to decode
-// messages obtained from the HLT. In order to be independent of given ALIROOT
-// installations the code is converted into a stand alone class and copied to
-// the project. This part of the code can consequently not be released under
-// the GPL v3 but instead is released under the BSD License, in agreement with 
-// the original author. Full credit goes to the original author Mikolaj Krzewicki
+// a helper library for using ZMQ with ALIROOT, focussed on multipart messaging
+// this lib implements the HLT specific interface, for general use cases
+// see AliZMQhelpers.h
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
-// some of it might be inspired by czmq.h
-// Changes by Markus: Make it a stand alone package and rename functios in order
-// to aviod naming clashes.
+// some of it might be inspired by czmq.h (http://czmq.zeromq.org)
 
-namespace EMCalZMQhelpers {
-  extern void* gZMQcontext; //a global ZMQ context
-}
-
-#include <string>
-#include <map>
-#include "TString.h"
-struct zmq_msg_t;
-struct AliHLTDataTopic;
-class TStreamerInfo;
-
-//convenience typedefs:
-//define a map of strings
-typedef std::map<std::string,std::string> stringMap;
-typedef std::pair<zmq_msg_t*, zmq_msg_t*> aliZMQframe;
-typedef std::vector<aliZMQframe> aliZMQmsg;
-typedef std::vector<std::pair<std::string, std::string> > aliZMQmsgStr;
-typedef std::vector<std::pair<std::string, std::string> > aliStringVec;
-typedef std::map<int,TStreamerInfo*> aliZMQTstreamerInfo;
-
-//  Init and bind/connect a ZMQ socket using a string:
-//  PUB@tcp://*:123123
-//  SUB>tcp://localhost:123123,@tcp://*:454545
-//  timeout is in ms, -1 is wait forever
-int emcalzmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
-
-//get the global context
-void* emcalzmq_context();
-
-// extract the socket mode from a config string
-int emcalzmq_socket_type(std::string config);
-int emcalzmq_socket_type(void* socket);
-const char* emcalzmq_socket_name(int socketType);
-
-//  --------------------------------------------------------------------------
-//  Attach a socket to zero or more endpoints. If endpoints is not null,
-//  parses as list of ZeroMQ endpoints, separated by commas, and prefixed by
-//  '@' (to bind the socket) or '>' (to attach the socket - alternative: '-'). 
-//  Returns 0 if all endpoints were valid, or -1 if there was a syntax error. 
-//  If the endpoint does not start with '@' or '>'('-'), the serverish
-//  argument defines whether it is used to bind (serverish = true)
-//  or connect (serverish = false).
-int emcalzmq_attach (void *self, const char *endpoints, bool serverish=false);
-int emcalzmq_detach (void *self, const char *endpoints, bool serverish=false);
-
-//general multipart messages (aliZMQmsg)
-//to access, just iterate over it.
-int emcalzmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
-int emcalzmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object, int compression=0, aliZMQTstreamerInfo* streamers=NULL);
-int emcalzmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::string& data);
-int emcalzmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, void* buffer, int size);
-int emcalzmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data);
-int emcalzmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
-int emcalzmq_msg_send(aliZMQmsg* message, void* socket, int flags);
-int emcalzmq_msg_close(aliZMQmsg* message);
-
-//ROOT streamers
-int emcalzmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* streamers);
-int emcalzmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it);
-
-//checking identity of the frame via iterator
-int emcalzmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
-int emcalzmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic);
-//helpers for accessing data via iterators
-int emcalzmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic);
-int emcalzmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data);
-int emcalzmq_msg_iter_topic(aliZMQmsg::iterator it, AliHLTDataTopic& topic);
-int emcalzmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object);
-
-//string messages, no need to close, strings are copied
-int emcalzmq_msg_send(std::string topic, std::string data, void* socket, int flags);
-int emcalzmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags);
-
-//send a single block (one header + payload), ZMQ_SNDMORE should not be used
-int emcalzmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQTstreamerInfo* streamers=NULL);
-int emcalzmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags);
-
-//deallocate an object - callback for ZMQ
-void emcalzmq_deleteTObject(void*, void* object);
-void emcalzmq_deleteTopic(void*, void* object);
-
-//simple zmq multi part message class
-//behaves like a map.
-//this is to simplify receiving/sending multipart msgs
-//and to handle message destruction automatically
-//keep it simple!
-//class AliZMQmsg {
-//public:
-//  AliZMQmsg() {}
-//  ~AliZMQmsg() {}
-//  int Receive(void* socket) {return 0;}
-//  int Send(void* socket) {return 0;}
-//  void Add(zmq_msg_t* topic, zmq_msg_t* data) {}
+// Copyright (C) 2015 Goethe University Frankfurt
 //
-//  //define (delegate) iterators
-//  typedef aliZMQmsg::iterator iterator;
-//  typedef aliZMQmsg::const_iterator const_iterator;
-//  iterator begin() { return fMessage.begin(); }
-//  iterator end() { return fMessage.end(); }
-//private:
-//  aliZMQmsg fMessage;
-//};
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
-//simple option parser class
-class EmcalOptionParser {
-public:
-  EmcalOptionParser() {}
-  virtual ~EmcalOptionParser() {}
-  //implement this to process one option at a time
-  virtual int ProcessOption(TString /*option*/, TString /*value*/) {return 0;}
-  
-  //call this to parse the args
-  int ProcessOptionString(TString arguments);
-  int ProcessOptionString(int argc, char** argv) { return ProcessOptionString(GetFullArgString(argc,argv)); }
+#include "EmcalZMQhelpersBase.h"
+#include "AliHLTDataTypes.h"
+#include <inttypes.h>
 
-  //convert argc/argv into a TString of options
-  static TString GetFullArgString(int argc, char** argv);
-  static aliStringVec* TokenizeOptionString(const TString str);
+namespace EmcalZMQhelpers
+{
+
+//this is just to implement the methods which depend on aliroot HLT definitions
+//for ZMQ communication
+struct EmcalHLTDataTopic : public DataTopic
+{
+  //ctor
+  EmcalHLTDataTopic()
+    : DataTopic()
+  {
+  }
+
+  //copy ctor
+  EmcalHLTDataTopic(const AliHLTComponentDataType& dataType)
+    : DataTopic()
+  {
+    SetID(dataType.fID);
+    SetOrigin(dataType.fOrigin);
+  }
+
+  //copy ctor
+  EmcalHLTDataTopic(const AliHLTComponentBlockData& blockData)
+    : DataTopic()
+  {
+    SetSpecification(blockData.fSpecification);
+    SetID(blockData.fDataType.fID);
+    SetOrigin(blockData.fDataType.fOrigin);
+    if (strncmp(blockData.fDataType.fID,"ROOT",4)==0) {
+      SetSerialization(kSerializationROOT);
+    }
+  }
+
+  //partial (no fSpecification) copy from AliHLTComponentDataType
+  EmcalHLTDataTopic& operator=( const AliHLTComponentDataType& dataType )
+  {
+    SetID(dataType.fID);
+    SetOrigin(dataType.fOrigin);
+    return *this;
+  }
+
+  //assignment from a AliHLTComponentBlockData
+  EmcalHLTDataTopic& operator=( const AliHLTComponentBlockData& blockData )
+  {
+    SetSpecification(blockData.fSpecification);
+    SetID(blockData.fDataType.fID);
+    SetOrigin(blockData.fDataType.fOrigin);
+    if (strncmp(blockData.fDataType.fID,"ROOT",4)==0) {
+      SetSerialization(kSerializationROOT);
+    }
+    return *this;
+  }
+
+  bool operator==( const EmcalHLTDataTopic& dt )
+  {
+    bool topicMatch =  Topicncmp(dt.GetIDstr(),GetIDstr());
+    return topicMatch;
+  }
+
+  bool operator==( const AliHLTComponentDataType& dataType)
+  {
+    AliHLTComponentDataType dt;
+    memcpy(dt.fID, &fDataDescription[2], kAliHLTComponentDataTypefIDsize);
+    memcpy(dt.fOrigin, &fDataOrigin, kAliHLTComponentDataTypefIDsize);
+    return dt==dataType;
+  }
+
+  void Fill(AliHLTComponentDataType& dt)
+  {
+    memcpy( dt.fID, &fDataDescription[1], kAliHLTComponentDataTypefIDsize );
+    memcpy( dt.fOrigin, &fDataOrigin, kAliHLTComponentDataTypefOriginSize );
+  }
+
 };
 
-//a general utility to tokenize strings
-std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
-//parse 
-stringMap ParseParamString(const std::string paramString);
+
+int emcalzmq_msg_iter_check_id(emcalZMQmsg::iterator it, const EmcalHLTDataTopic& topic);
+int emcalzmq_msg_send(const EmcalHLTDataTopic& topic, TObject* object, void* socket, int flags,
+                    int compression=0, emcalZMQrootStreamerInfo* streamers=NULL);
+int emcalzmq_msg_send(const EmcalHLTDataTopic& topic, const std::string& data, void* socket, int flags);
+
+}  //end namespace AliZMQhelpers
+
 #endif
+

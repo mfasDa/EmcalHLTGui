@@ -2,6 +2,7 @@ APPSRC=src/main.cxx
 
 DEPSRC:=src/ViewHandler.cxx \
 		src/View.cxx \
+		src/EmcalZMQhelpersBase.cxx \
 		src/EmcalZMQhelpers.cxx \
 		src/Synchronized.cxx \
 		src/DataHandler.cxx \

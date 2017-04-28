@@ -60,9 +60,9 @@ EMCALHLTGUI::shared_ptr<TH1> DataHandler::FindHistogram(const std::string &histn
 }
 
 bool DataHandler::DoRequest(){
-    	fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-    	emcalzmq_msg_send("CONFIG", "select=EMC*", fZMQin, ZMQ_SNDMORE);
-    	emcalzmq_msg_send("", "", fZMQin, 0);
+    	fZMQsocketModeIN = EmcalZMQhelpers::emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+    	EmcalZMQhelpers::emcalzmq_msg_send("CONFIG", "select=EMC*", fZMQin, ZMQ_SNDMORE);
+    	EmcalZMQhelpers::emcalzmq_msg_send("", "", fZMQin, 0);
 
     	//wait for the data
     	zmq_pollitem_t sockets[] = {
@@ -78,7 +78,7 @@ bool DataHandler::DoRequest(){
     	if (!(sockets[0].revents & ZMQ_POLLIN)) {
       		//server died
       		Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
-      		fZMQsocketModeIN = emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+      		fZMQsocketModeIN = EmcalZMQhelpers::emcalzmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
       		std::cout << fZMQsocketModeIN << std::endl;
       		if (fZMQsocketModeIN < 0) return false;
     	}
@@ -92,20 +92,20 @@ void DataHandler::GetData(){
 	//Lock();
 	Clear();
 
-	aliZMQmsg message;
-	emcalzmq_msg_recv(&message, fZMQin, 0);
+	EmcalZMQhelpers::emcalZMQmsg message;
+	EmcalZMQhelpers::emcalzmq_msg_recv(&message, fZMQin, 0);
 
 	//process message, deserialize objects, puth them in the container
-	for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
+	for (EmcalZMQhelpers::emcalZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
 	{
-		if (emcalzmq_msg_iter_check(i, "INFO")==0)
+		if (EmcalZMQhelpers::emcalzmq_msg_iter_check_id(i, "INFO")==0)
 		{
 			//check if we have a runnumber in the string
 			std::string info;
-			emcalzmq_msg_iter_data(i,info);
+			EmcalZMQhelpers::emcalzmq_msg_iter_data(i,info);
 			//Printf("processing INFO %s", info.c_str());
 
-			stringMap fInfoMap = ParseParamString(info);
+			EmcalZMQhelpers::stringMap fInfoMap = EmcalZMQhelpers::ParseParamString(info);
 
 			fRunNumber = atoi(fInfoMap["run"].c_str());
 			fHLTmode = fInfoMap["HLTmode"];
@@ -113,7 +113,7 @@ void DataHandler::GetData(){
 		}
 
 		TObject* object;
-		emcalzmq_msg_iter_data(i, object);
+		EmcalZMQhelpers::emcalzmq_msg_iter_data(i, object);
 		fData.SetHistogram(static_cast<TH1 *>(object));
 
 		// Check how many events are in the message
@@ -124,7 +124,7 @@ void DataHandler::GetData(){
 		}
 
 	} //for iterator i
-	emcalzmq_msg_close(&message);
+	EmcalZMQhelpers::emcalzmq_msg_close(&message);
 	std::cout << "Process Unlocked " << std::endl;
 	//Unlock();
 }

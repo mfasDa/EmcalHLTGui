@@ -25,7 +25,6 @@
 
 #include "EmcalZMQhelpersBase.h"
 #include "AliHLTDataTypes.h"
-#include <inttypes.h>
 
 namespace EmcalZMQhelpers
 {
